@@ -1,6 +1,6 @@
 {
   "name": "jorijn/laravel-security-checker",
-  "description": "Added Laravel functionality to SensioLabs Security Checker. Adds a command to check for- and optionally emails you vulnerabilities when they affect you.",
+  "description": "Added Laravel functionality to SensioLabs Security Checker. Adds a command to check for, and optionally emails you, vulnerabilities when they affect you.",
   "license": "MIT",
   "keywords": ["laravel", "security", "composer", "dependencies"],
   "authors": [
@@ -12,7 +12,13 @@
   "require": {
     "sensiolabs/security-checker": "^4.0.0",
     "php": ">=5.5.9",
-    "illuminate/support": "5.3.*|5.4.*|5.5.*"
+    "illuminate/support": "^5.0,<5.6",
+    "illuminate/console": "^5.0,<5.6"
+  },
+  "require-dev": {
+    "illuminate/config": "^5.0,<5.6",
+    "illuminate/view": "^5.0,<5.6",
+    "phpunit/phpunit": "4.*"
   },
   "autoload": {
     "psr-4": {
