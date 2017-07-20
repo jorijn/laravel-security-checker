@@ -18,7 +18,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function register()
     {
-        $configPath = __DIR__ . '/../config/laravel-security-checker.php';
+        $configPath = __DIR__.'/../config/laravel-security-checker.php';
         $this->mergeConfigFrom($configPath, 'laravel-security-checker');
     }
 
@@ -29,8 +29,8 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function boot()
     {
-        $configPath = __DIR__ . '/../config/laravel-security-checker.php';
-        $this->publishes([$configPath => $this->getConfigPath()], 'config');
+        $configPath = __DIR__.'/../config/laravel-security-checker.php';
+        $this->publishes([ $configPath => $this->getConfigPath() ], 'config');
     }
 
     /**
@@ -50,6 +50,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     protected function publishConfig($configPath)
     {
-        $this->publishes([$configPath => config_path('laravel-security-checker.php')], 'config');
+        $this->publishes([ $configPath => config_path('laravel-security-checker.php') ], 'config');
     }
 }
