@@ -31,8 +31,10 @@ class SecurityMail extends Mailable
     public function build()
     {
         $packageCount = count($this->checkResult);
-        $title        = trans_choice('laravel-security-checker::messages.subject_new_vulnerabilities', $packageCount, [ 'count' => $packageCount ]);
-        $subject      = '['.config('app.name').'] '.$title;
+        $title = trans_choice('laravel-security-checker::messages.subject_new_vulnerabilities', $packageCount, [
+            'count' => $packageCount
+        ]);
+        $subject = '['.config('app.name').'] '.$title;
 
         return $this->subject($subject)
             ->markdown('laravel-security-checker::security-mail', [
