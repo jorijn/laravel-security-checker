@@ -25,6 +25,7 @@ class SecurityCommand extends Command
 
     /**
      * SecurityCommand constructor.
+     *
      * @param SecurityChecker $checker
      */
     public function __construct(SecurityChecker $checker)
