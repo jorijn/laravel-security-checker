@@ -2,6 +2,8 @@
 
 namespace Jorijn\LaravelSecurityChecker;
 
+use Jorijn\LaravelSecurityChecker\Console\SecurityCommand;
+
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
     /**
@@ -9,7 +11,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      *
      * @var bool
      */
-    protected $defer = true;
+    protected $defer = false;
 
     /**
      * Register the service provider.
@@ -31,6 +33,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $configPath = __DIR__.'/../config/laravel-security-checker.php';
         $this->publishes([ $configPath => $this->getConfigPath() ], 'config');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SecurityCommand::class
+            ]);
+        }
     }
 
     /**
