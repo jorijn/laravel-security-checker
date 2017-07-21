@@ -5,10 +5,10 @@
 ## {{ $package }} — {{ $report['version'] }}
 
 @component('mail::table')
-| Title | CVE | Information |
+| @lang('laravel-security-checker::messages.title') | @lang('laravel-security-checker::messages.cve') | @lang('laravel-security-checker::messages.information') |
 | :---- | :-- | :---------- |
 @foreach($report['advisories'] as $key => $information)
-| {{ $information['title'] }} | {{ $information['cve'] || '' }} | [View]({{ $information['link'] }})
+| {{ $information['title'] }} | {{ $information['cve'] || '' }} | [@lang('laravel-security-checker::messages.view')]({{ $information['link'] }})
 @endforeach
 @endcomponent
 @endforeach

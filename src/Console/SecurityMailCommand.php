@@ -47,12 +47,16 @@ class SecurityMailCommand extends Command
         // and feed it into the SecurityChecker
         $checkResult = $this->checker->check($composerLock);
 
-        $recipients = config('laravel-security-checker.recipients', []);
-        if (count($recipients) === 0) {
-            $this->error(__('No recipients has been configured yet!'));
+        // get the recipients and filter out any configuration mistakes
+        $recipients = collect(config('laravel-security-checker.recipients', []))->filter(function($recipient) {
+            return !is_null($recipient) && !empty($recipient);
+        });
+
+        if (is_null($recipients) || count($recipients) === 0) {
+            $this->error(trans('laravel-security-checker::messages.no_recipients_configured'));
             return 1;
         }
 
-        Mail::to($recipients)->send(new SecurityMail($checkResult));
+        Mail::to($recipients->toArray())->send(new SecurityMail($checkResult));
     }
 }
