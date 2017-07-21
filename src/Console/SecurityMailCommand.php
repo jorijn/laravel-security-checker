@@ -47,7 +47,7 @@ class SecurityMailCommand extends Command
         // and feed it into the SecurityChecker
         $checkResult = $this->checker->check($composerLock);
 
-        $recipients = config('laravel-security-checker.recipients', []);
+        $recipients = config('laravel-security-checker.recipients', [ ]);
         if (count($recipients) === 0) {
             $this->error(__('No recipients has been configured yet!'));
             return 1;
