@@ -7,7 +7,8 @@
 [![Code Coverage](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
 [![Build Status](https://travis-ci.org/Jorijn/laravel-security-checker.svg?branch=master)](https://travis-ci.org/Jorijn/laravel-security-checker)
 
-This package provides an easy way for your to check your local `composer.lock` against the [Symfony Security Advisories Checker](https://security.sensiolabs.org/). It can either display the results in your console of email them to you on a scheduled basis. 
+This package provides an easy way for you to check your local `composer.lock` against the [Symfony Security Advisories Checker](https://security.sensiolabs.org/). 
+It can either display the results in your console of email them to you on a scheduled basis. It uses Laravel's markdown system so it should fit nicely in your own styling. 
 
 #### Screenshot
 ![screenshot-email](https://user-images.githubusercontent.com/85466/28467234-7a164e4a-6e2f-11e7-964e-5f4a3a63b9da.png)
@@ -42,13 +43,13 @@ Publish the configuration file and change it there.
 php artisan vendor:publish --provider="Jorijn\LaravelSecurityChecker\ServiceProvider" --tag="config"
 ```
 
+_Note: On Laravel 5.5 and up, this package will use auto discovery._
+
 If you want control on how the email is formatted you can have Laravel export the view for you using:
 
 ```bash
 php artisan vendor:publish --provider="Jorijn\LaravelSecurityChecker\ServiceProvider" --tag="views"
 ```
-
-_Note: On Laravel 5.5 and up, this package will use auto discovery._
 
 ### Scheduling
 The packages exposes a new command for you:
@@ -68,7 +69,7 @@ protected function schedule(Schedule $schedule)
 ```
 
 ## Running as a command
-This package provides a functional wrapper around the SensioLab's Security Checker command. You can call it using `php artisan security-check:now`.
+This package provides a wrapper around the SensioLab's Security Checker command. You can call it using `php artisan security-check:now`.
  
 ![screenshot-console](https://user-images.githubusercontent.com/85466/28452254-17f3476e-6df2-11e7-9e5e-1c3d52b57722.png)
 
