@@ -16,5 +16,6 @@ return [
     'view' => 'View',
     'cve' => 'CVE',
     'information' => 'Information',
-    'no_recipients_configured' => 'No recipients has been configured yet!'
+    'no_recipients_configured' => 'No recipients has been configured yet!',
+    'body_no_vulnerabilities' => 'It seems that no packages have any known vulnerabilities. You can read more about disabling this message [here](https://github.com/jorijn/laravel-security-checker#configuration).'
 ];

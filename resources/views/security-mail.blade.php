@@ -13,4 +13,8 @@
 @endcomponent
 @endforeach
 
+@if (count($packages) === 0)
+{{ trans('laravel-security-checker::messages.body_no_vulnerabilities') }}
+@endif
+
 @endcomponent

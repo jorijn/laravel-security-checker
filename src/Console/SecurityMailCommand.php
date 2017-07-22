@@ -37,7 +37,7 @@ class SecurityMailCommand extends Command
     }
 
     /**
-     *
+     * Fire the command
      */
     public function fire()
     {
@@ -46,6 +46,13 @@ class SecurityMailCommand extends Command
 
         // and feed it into the SecurityChecker
         $checkResult = $this->checker->check($composerLock);
+
+        // if the user didn't want any email if there are no results,
+        // cancel execution here.
+        $proceed = config('laravel-security-checker.email_even_without_vulnerabilities', false);
+        if (count($checkResult) === 0 && $proceed !== true) {
+            return 0;
+        }
 
         // get the recipients and filter out any configuration mistakes
         $recipients = collect(config('laravel-security-checker.recipients', [ ]))->filter(function ($recipient) {
@@ -58,5 +65,7 @@ class SecurityMailCommand extends Command
         }
 
         Mail::to($recipients->toArray())->send(new SecurityMail($checkResult));
+
+        return 0;
     }
 }

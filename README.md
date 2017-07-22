@@ -26,6 +26,8 @@ After updating composer, add the service provider to the `providers` array in `c
 Jorijn\LaravelSecurityChecker\ServiceProvider::class,
 ```
 
+_Note: On Laravel 5.5 and up, this package will use auto discovery and the above step is no longer required._
+
 ### Configuration
 If you want to have the package email the reports to you, you need to tell the package to who it should send it to. 
 
@@ -43,12 +45,16 @@ Publish the configuration file and change it there.
 php artisan vendor:publish --provider="Jorijn\LaravelSecurityChecker\ServiceProvider" --tag="config"
 ```
 
-_Note: On Laravel 5.5 and up, this package will use auto discovery._
-
 If you want control on how the email is formatted you can have Laravel export the view for you using:
 
 ```bash
 php artisan vendor:publish --provider="Jorijn\LaravelSecurityChecker\ServiceProvider" --tag="views"
+```
+
+By default, the package won't email you when there are no vulnerabilities found. You can change this setting by adding the following entry to your `.env` file.
+
+```
+LCS_EMAIL_WITHOUT_VULNERABILITIES=true
 ```
 
 ### Scheduling
