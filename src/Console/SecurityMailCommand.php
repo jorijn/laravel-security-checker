@@ -59,7 +59,7 @@ class SecurityMailCommand extends Command
             return !is_null($recipient) && !empty($recipient);
         });
 
-        if (is_null($recipients) || count($recipients) === 0) {
+        if ($recipients->count() === 0) {
             $this->error(__('laravel-security-checker::messages.no_recipients_configured'));
             return 1;
         }
