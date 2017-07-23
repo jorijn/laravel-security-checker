@@ -1,5 +1,8 @@
 # Changelog for Laravel Security Checker
 
+## v0.2.2 (2017-07-23)
+* wrote tests to cover 100% of the package functionality
+
 ## v0.2.1 (2017-07-23)
 * fixed a bug in the email where the CVE wasn't displayed correctly
 * added DE and NL languages. thanks @mijndert
