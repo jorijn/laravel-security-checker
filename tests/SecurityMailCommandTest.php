@@ -22,18 +22,7 @@ class SecurityMailCommandTest extends TestCase
         parent::setUp();
 
         // declare fake vulnerability
-        $this->exampleCheckOutput = [
-            "bugsnag/bugsnag-laravel" => [
-                "version" => "v2.0.1",
-                "advisories" => [
-                    "bugsnag/bugsnag-laravel/CVE-2016-5385.yaml" => [
-                        "title" => "HTTP Proxy header vulnerability",
-                        "link" => "https://github.com/bugsnag/bugsnag-laravel/releases/tag/v2.0.2",
-                        "cve" => "CVE-2016-5385"
-                    ]
-                ]
-            ]
-        ];
+        $this->exampleCheckOutput = $this->getFakeVulnerabilityReport();
 
         // mock the security checker
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
