@@ -65,14 +65,4 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         return config_path('laravel-security-checker.php');
     }
-
-    /**
-     * Publish the config file
-     *
-     * @param  string $configPath
-     */
-    protected function publishConfig($configPath)
-    {
-        $this->publishes([ $configPath => config_path('laravel-security-checker.php') ], 'config');
-    }
 }
