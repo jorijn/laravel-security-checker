@@ -50,12 +50,4 @@ class SecurityMail extends Mailable
     {
         return $this->checkResult;
     }
-
-    /**
-     * @param array $checkResult
-     */
-    public function setCheckResult($checkResult)
-    {
-        $this->checkResult = $checkResult;
-    }
 }
