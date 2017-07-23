@@ -42,4 +42,20 @@ class SecurityMail extends Mailable
                 'packages' => $this->checkResult
             ]);
     }
+
+    /**
+     * @return array
+     */
+    public function getCheckResult()
+    {
+        return $this->checkResult;
+    }
+
+    /**
+     * @param array $checkResult
+     */
+    public function setCheckResult($checkResult)
+    {
+        $this->checkResult = $checkResult;
+    }
 }
