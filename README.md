@@ -8,7 +8,7 @@
 [![Build Status](https://travis-ci.org/Jorijn/laravel-security-checker.svg?branch=master)](https://travis-ci.org/Jorijn/laravel-security-checker)
 
 This package provides an easy way for you to check your local `composer.lock` against the [Symfony Security Advisories Checker](https://security.sensiolabs.org/). 
-It can either display the results in your console of email them to you on a scheduled basis. It uses Laravel's markdown system so it should fit nicely in your own styling. 
+It can either display the results in your console or email them to you on a scheduled basis. It uses Laravel's markdown system so it should fit nicely in your own styling. 
 
 #### Screenshot
 <img width="647" alt="screenshot-email" src="https://user-images.githubusercontent.com/85466/28497517-9e41580e-6f89-11e7-9c4e-0ebf713add6a.png">
@@ -29,7 +29,7 @@ Jorijn\LaravelSecurityChecker\ServiceProvider::class,
 _Note: On Laravel 5.5 and up, this package will use auto discovery and the above step is no longer required._
 
 ### Configuration
-If you want to have the package email the reports to you, you need to tell the package to who it should send it to. 
+If you want to have the package email the reports to you, you need to tell the package who it should be send it to. 
 
 #### Option 1
 Add it to your `.env` file.
