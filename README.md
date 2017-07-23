@@ -29,7 +29,7 @@ Jorijn\LaravelSecurityChecker\ServiceProvider::class,
 _Note: On Laravel 5.5 and up, this package will use auto discovery and the above step is no longer required._
 
 ### Configuration
-If you want to have the package email the reports to you, you need to tell the package who it should be send it to. 
+If you want the package to send reports by email, you'll need to specify a recipient.
 
 #### Option 1
 Add it to your `.env` file.
