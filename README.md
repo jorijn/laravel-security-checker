@@ -11,7 +11,7 @@ This package provides an easy way for you to check your local `composer.lock` ag
 It can either display the results in your console of email them to you on a scheduled basis. It uses Laravel's markdown system so it should fit nicely in your own styling. 
 
 #### Screenshot
-![screenshot-email](https://user-images.githubusercontent.com/85466/28497517-9e41580e-6f89-11e7-9c4e-0ebf713add6a.png)
+<img width="647" alt="screenshot-email" src="https://user-images.githubusercontent.com/85466/28497517-9e41580e-6f89-11e7-9c4e-0ebf713add6a.png">
 
 ## Installation
 Require this package with composer using the following command:
