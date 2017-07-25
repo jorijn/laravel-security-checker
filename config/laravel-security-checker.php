@@ -7,7 +7,7 @@ return [
     | Laravel Security Checker — Recipients
     |--------------------------------------------------------------------------
     |
-    | This file will tell the package where to send it's security mails to.
+    | This will tell the package where to send its security mails.
     |
     */
 
@@ -20,7 +20,7 @@ return [
      | Laravel Security Checker — Email settings
      |--------------------------------------------------------------------------
      |
-     | Decides wether the package should send email to you even if there aren't
+     | Decides wether the package should send an email even if there aren't
      | any vulnerabilities found.
      |
      */
