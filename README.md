@@ -1,10 +1,9 @@
 ## Laravel Security Checker
-[![Latest Stable Version](https://poser.pugx.org/jorijn/laravel-security-checker/version)](https://packagist.org/packages/jorijn/laravel-security-checker)
-[![Total Downloads](https://poser.pugx.org/jorijn/laravel-security-checker/downloads)](https://packagist.org/packages/jorijn/laravel-security-checker)
-[![Latest Unstable Version](https://poser.pugx.org/jorijn/laravel-security-checker/v/unstable)](//packagist.org/packages/jorijn/laravel-security-checker)
-[![License](https://poser.pugx.org/jorijn/laravel-security-checker/license)](https://packagist.org/packages/jorijn/laravel-security-checker)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
+[![Latest Stable Version](https://img.shields.io/packagist/v/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
+[![Total Downloads](https://img.shields.io/packagist/dt/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
+[![License](https://img.shields.io/github/license/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
+[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/jorijn/laravel-security-checker.svg)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
+[![Code Coverage](https://img.shields.io/scrutinizer/coverage/g/jorijn/laravel-security-checker.svg)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
 [![Build Status](https://travis-ci.org/Jorijn/laravel-security-checker.svg?branch=master)](https://travis-ci.org/Jorijn/laravel-security-checker)
 
 This package provides an easy way for you to check your local `composer.lock` against the [Symfony Security Advisories Checker](https://security.sensiolabs.org/). 
