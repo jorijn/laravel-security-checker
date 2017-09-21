@@ -10,11 +10,14 @@ use SensioLabs\Security\SecurityChecker;
 class SecurityMailCommand extends Command
 {
     /**
+     * The name and signature of the console command.
+     *
      * @var string
      */
     protected $name = 'security-check:email';
 
     /**
+     * The console command description.
      * @var string
      */
     protected $description = 'Emails any vulnerabilities for packages you have in your composer.lock file.';
@@ -37,9 +40,9 @@ class SecurityMailCommand extends Command
     }
 
     /**
-     * Fire the command
+     * Execute the console command.
      */
-    public function fire()
+    public function handle()
     {
         // get the path to composer.lock
         $composerLock = base_path('composer.lock');

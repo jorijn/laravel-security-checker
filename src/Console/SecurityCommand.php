@@ -9,11 +9,15 @@ use SensioLabs\Security\SecurityChecker;
 class SecurityCommand extends Command
 {
     /**
+     * The name and signature of the console command.
+     *
      * @var string
      */
     protected $name = 'security-check:now';
 
     /**
+     * The console command description.
+     *
      * @var string
      */
     protected $description = 'Checks composer.lock for any vulnerabilities against the SensioLabs checker.';
@@ -36,9 +40,9 @@ class SecurityCommand extends Command
     }
 
     /**
-     * Fire the command
+     * Execute the console command.
      */
-    public function fire()
+    public function handle()
     {
         // get the path to composer.lock
         $composerLock = base_path('composer.lock');
