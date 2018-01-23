@@ -36,9 +36,9 @@ class SecurityCommand extends Command
     }
 
     /**
-     * Fire the command
+     * Execute the command
      */
-    public function fire()
+    public function handle()
     {
         // get the path to composer.lock
         $composerLock = base_path('composer.lock');
