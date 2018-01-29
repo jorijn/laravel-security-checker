@@ -4,6 +4,7 @@ namespace Jorijn\LaravelSecurityChecker;
 
 use Jorijn\LaravelSecurityChecker\Console\SecurityCommand;
 use Jorijn\LaravelSecurityChecker\Console\SecurityMailCommand;
+use Jorijn\LaravelSecurityChecker\Console\SecuritySlackCommand;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
@@ -21,7 +22,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function register()
     {
-        $configPath = __DIR__.'/../config/laravel-security-checker.php';
+        $configPath = __DIR__ . '/../config/laravel-security-checker.php';
         $this->mergeConfigFrom($configPath, 'laravel-security-checker');
     }
 
@@ -33,25 +34,26 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     public function boot()
     {
         // configuration
-        $configPath = __DIR__.'/../config/laravel-security-checker.php';
-        $this->publishes([ $configPath => $this->getConfigPath() ], 'config');
+        $configPath = __DIR__ . '/../config/laravel-security-checker.php';
+        $this->publishes([$configPath => $this->getConfigPath()], 'config');
 
         // views
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-security-checker');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'laravel-security-checker');
         $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-security-checker'),
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/laravel-security-checker'),
         ], 'views');
 
         // translations
-        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-security-checker');
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'laravel-security-checker');
         $this->publishes([
-            __DIR__.'/../resources/lang' => resource_path('lang/vendor/laravel-security-checker'),
+            __DIR__ . '/../resources/lang' => resource_path('lang/vendor/laravel-security-checker'),
         ], 'translations');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SecurityCommand::class,
                 SecurityMailCommand::class,
+                SecuritySlackCommand::class,
             ]);
         }
     }

@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Laravel Security Checker — Recipients
@@ -26,4 +25,15 @@ return [
      */
 
     'email_even_without_vulnerabilities' => env('LCS_EMAIL_WITHOUT_VULNERABILITIES', false),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Laravel Security Checker — Slack Webhook URL
+     |--------------------------------------------------------------------------
+     |
+     | Which Slack Webhook URL should we post to when using Slack notifications?
+     |
+     */
+
+    'slack_webhook_url' => env('LCS_SLACK_WEBHOOK', null),
 ];

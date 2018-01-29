@@ -30,6 +30,15 @@ _Note: On Laravel 5.5 and up, this package will use auto discovery, and the abov
 ### Configuration
 If you want the package to send reports by email, you'll need to specify a recipient.
 
+If you want the pacakge to send the report to a Slack channel, you will need to specify a Slack Webhook
+in your `.env` file.
+
+E.g.:
+
+```
+LCS_SLACK_WEBHOOK=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+```
+
 #### Option 1
 Add it to your `.env` file.
 
