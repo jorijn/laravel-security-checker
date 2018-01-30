@@ -17,7 +17,7 @@ class SecuritySlackCommand extends Command
     /**
      * @var string
      */
-    protected $description = 'Send any vulnerabilities for packages you have in your composer.lock file to a Slack channel.';
+    protected $description = 'Send vulnerabilities to a Slack channel.';
 
     /**
      * @var SecurityChecker
