@@ -42,7 +42,7 @@ class SecuritySlackNotification extends Notification
      */
     public function via()
     {
-        return ['slack'];
+        return [ 'slack' ];
     }
 
     /**
@@ -55,9 +55,8 @@ class SecuritySlackNotification extends Notification
         return (new SlackMessage)
             ->from(config('app.url'))
             ->content("*Security Check Report:* `{$this->composerLockPath}`")
-            ->attachment(function ($attachment) {
-                $attachment->content($this->textFormatter())
-                    ->markdown(['text']);
+            ->attachment(function($attachment) {
+                $attachment->content($this->textFormatter())->markdown(['text']);
             });
     }
 
@@ -82,19 +81,19 @@ class SecuritySlackNotification extends Notification
 
         if (0 !== $count) {
             foreach ($this->vulnerabilities as $dependency => $issues) {
-                $dependencyFullName = $dependency . ' (' . $issues['version'] . ')';
+                $dependencyFullName = $dependency.' ('.$issues[ 'version' ].')';
                 $txt .= "\n";
-                $txt .= "*{$dependencyFullName}*" . "\n" . str_repeat('-', strlen($dependencyFullName)) . "\n";
+                $txt .= "*{$dependencyFullName}*"."\n".str_repeat('-', strlen($dependencyFullName))."\n";
 
-                foreach ($issues['advisories'] as $issue => $details) {
+                foreach ($issues[ 'advisories' ] as $issue => $details) {
                     $txt .= ' * ';
-                    if ($details['cve']) {
-                        $txt .= "{$details['cve']} ";
+                    if ($details[ 'cve' ]) {
+                        $txt .= "{$details[ 'cve' ]} ";
                     }
-                    $txt .= "{$details['title']} ";
+                    $txt .= "{$details[ 'title' ]} ";
 
-                    if ('' !== $details['link']) {
-                        $txt .= "{$details['link']}";
+                    if ('' !== $details[ 'link' ]) {
+                        $txt .= "{$details[ 'link' ]}";
                     }
 
                     $txt .= "\n";
