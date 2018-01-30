@@ -26,7 +26,8 @@ class SecuritySlackNotification extends Notification
     /**
      * Create a new notification instance.
      *
-     * @return void
+     * @param $vulnerabilities
+     * @param $composerLockPath
      */
     public function __construct($vulnerabilities, $composerLockPath)
     {
@@ -37,10 +38,9 @@ class SecuritySlackNotification extends Notification
     /**
      * Get the notification's delivery channels.
      *
-     * @param  mixed  $notifiable
      * @return array
      */
-    public function via($notifiable)
+    public function via()
     {
         return ['slack'];
     }
@@ -48,33 +48,32 @@ class SecuritySlackNotification extends Notification
     /**
      * Get the slack representation of the notification.
      *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\SlackMessage
+     * @return SlackMessage
      */
-    public function toSlack($notifiable)
+    public function toSlack()
     {
-        $vulnerabilities = $this->vulnerabilities;
-
         return (new SlackMessage)
             ->from(config('app.url'))
             ->content("*Security Check Report:* `{$this->composerLockPath}`")
             ->attachment(function ($attachment) {
                 $attachment->content($this->textFormatter())
-                ->markdown(['pretext']);
+                    ->markdown(['pretext']);
             });
     }
 
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
      * @return array
      */
-    public function toArray($notifiable)
+    public function toArray()
     {
         return $this->vulnerabilities;
     }
 
+    /**
+     * @return string
+     */
     protected function textFormatter()
     {
         $count = count($this->vulnerabilities);
