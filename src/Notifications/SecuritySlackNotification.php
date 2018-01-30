@@ -57,7 +57,7 @@ class SecuritySlackNotification extends Notification
             ->content("*Security Check Report:* `{$this->composerLockPath}`")
             ->attachment(function ($attachment) {
                 $attachment->content($this->textFormatter())
-                    ->markdown(['pretext']);
+                    ->markdown(['text']);
             });
     }
 
