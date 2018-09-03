@@ -55,12 +55,14 @@ class SecurityMailCommand extends Command
         }
 
         // get the recipients and filter out any configuration mistakes
-        $recipients = collect(config('laravel-security-checker.recipients', [ ]))->filter(function($recipient) {
+        $recipients = collect(config('laravel-security-checker.recipients', [ ]))->filter(function ($recipient) {
             return $recipient !== null && !empty($recipient);
         });
 
         if ($recipients->count() === 0) {
-            $this->error(/** @scrutinizer ignore-type */__('laravel-security-checker::messages.no_recipients_configured'));
+            $this->error(
+                /** @scrutinizer ignore-type */__('laravel-security-checker::messages.no_recipients_configured')
+            );
             return 1;
         }
 

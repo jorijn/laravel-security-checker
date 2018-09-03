@@ -55,7 +55,7 @@ class SecuritySlackNotification extends Notification
         return (new SlackMessage)
             ->from(config('app.url'))
             ->content("*Security Check Report:* `{$this->composerLockPath}`")
-            ->attachment(function($attachment) {
+            ->attachment(function ($attachment) {
                 $attachment->content($this->textFormatter())->markdown([ 'text' ]);
             });
     }
