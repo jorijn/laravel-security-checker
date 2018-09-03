@@ -62,7 +62,7 @@ php artisan vendor:publish --provider="Jorijn\LaravelSecurityChecker\ServiceProv
 By default, the package won't email you when there are no vulnerabilities found. You can change this setting by adding the following entry to your `.env` file.
 
 ```
-LCS_EMAIL_WITHOUT_VULNERABILITIES=true
+LCS_NOTIFY_WITHOUT_VULNERABILITIES=true
 ```
 
 ### Scheduling

@@ -49,7 +49,7 @@ class SecurityMailCommand extends Command
 
         // if the user didn't want any email if there are no results,
         // cancel execution here.
-        $proceed = config('laravel-security-checker.email_even_without_vulnerabilities', false);
+        $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);
         if (count($checkResult) === 0 && $proceed !== true) {
             return 0;
         }

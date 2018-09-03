@@ -80,7 +80,7 @@ class SecurityMailCommandTest extends TestCase
     {
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
-        Config::set('laravel-security-checker.email_even_without_vulnerabilities', false);
+        Config::set('laravel-security-checker.notify_even_without_vulnerabilities', false);
 
         // we have to re-bind the mockery instance for this since our parent one does hold
         // fake vulnerabilities.
@@ -107,7 +107,7 @@ class SecurityMailCommandTest extends TestCase
     {
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
-        Config::set('laravel-security-checker.email_even_without_vulnerabilities', true);
+        Config::set('laravel-security-checker.notify_even_without_vulnerabilities', true);
 
         // we have to re-bind the mockery instance for this since our parent one does hold
         // fake vulnerabilities.

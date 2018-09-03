@@ -19,12 +19,12 @@ return [
      | Laravel Security Checker — Email settings
      |--------------------------------------------------------------------------
      |
-     | Decides wether the package should send an email even if there aren't
+     | Decides whether the package should send an email even if there aren't
      | any vulnerabilities found.
      |
      */
 
-    'email_even_without_vulnerabilities' => env('LCS_EMAIL_WITHOUT_VULNERABILITIES', false),
+    'notify_even_without_vulnerabilities' => env('LCS_NOTIFY_WITHOUT_VULNERABILITIES', false),
 
     /*
      |--------------------------------------------------------------------------
