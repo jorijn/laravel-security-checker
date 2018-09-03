@@ -28,25 +28,18 @@ Jorijn\LaravelSecurityChecker\ServiceProvider::class,
 _Note: On Laravel 5.5 and up, this package will use auto discovery, and the above step is no longer required._
 
 ### Configuration
+
+#### Email
 If you want the package to send reports by email, you'll need to specify a recipient.
 
-If you want the pacakge to send the report to a Slack channel, you will need to specify a Slack Webhook
-in your `.env` file.
-
-E.g.:
-
-```
-LCS_SLACK_WEBHOOK=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
-```
-
-#### Option 1
+##### Option 1
 Add it to your `.env` file.
 
 ```
 LCS_MAIL_TO="someone@example.net"
 ```
 
-#### Option 2
+##### Option 2
 Publish the configuration file and change it there.
 
 ```bash
@@ -63,6 +56,16 @@ By default, the package won't email you when there are no vulnerabilities found.
 
 ```
 LCS_NOTIFY_WITHOUT_VULNERABILITIES=true
+```
+
+#### Slack
+If you want the package to send the report to a Slack channel, you will need to specify a Slack Webhook
+in your `.env` file.
+
+E.g.:
+
+```
+LCS_SLACK_WEBHOOK=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 ### Scheduling
