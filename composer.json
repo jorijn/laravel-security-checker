@@ -13,14 +13,14 @@
     "sensiolabs/security-checker": "^4.0.0",
     "php": ">=7.0",
     "guzzlehttp/guzzle": "^6.3",
-    "illuminate/support": ">=5.5,<=5.7",
-    "illuminate/console": ">=5.5,<=5.7",
-    "illuminate/mail": ">=5.5,<=5.7",
-    "laravel/framework": ">=5.5,<=5.7"
+    "illuminate/support": "5.5.x|5.6.x|5.7.x",
+    "illuminate/console": "5.5.x|5.6.x|5.7.x",
+    "illuminate/mail": "5.5.x|5.6.x|5.7.x",
+    "laravel/framework": "5.5.x|5.6.x|5.7.x"
   },
   "require-dev": {
-    "illuminate/config": ">=5.5,<=5.7",
-    "illuminate/view": ">=5.5,<=5.7",
+    "illuminate/config": "5.5.x|5.6.x|5.7.x",
+    "illuminate/view": "5.5.x|5.6.x|5.7.x",
     "phpunit/phpunit": "~6.0",
     "scrutinizer/ocular": "~1.1",
     "squizlabs/php_codesniffer": "~2.3",
