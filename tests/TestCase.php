@@ -12,7 +12,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function getPackageProviders($app)
     {
-        return [ ServiceProvider::class ];
+        return [ServiceProvider::class];
     }
 
     /**
@@ -23,13 +23,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
     public function getFakeVulnerabilityReport()
     {
         return [
-            "bugsnag/bugsnag-laravel" => [
-                "version" => "v2.0.1",
-                "advisories" => [
-                    "bugsnag/bugsnag-laravel/CVE-2016-5385.yaml" => [
-                        "title" => "HTTP Proxy header vulnerability",
-                        "link" => "https://github.com/bugsnag/bugsnag-laravel/releases/tag/v2.0.2",
-                        "cve" => "CVE-2016-5385"
+            'bugsnag/bugsnag-laravel' => [
+                'version' => 'v2.0.1',
+                'advisories' => [
+                    'bugsnag/bugsnag-laravel/CVE-2016-5385.yaml' => [
+                        'title' => 'HTTP Proxy header vulnerability',
+                        'link' => 'https://github.com/bugsnag/bugsnag-laravel/releases/tag/v2.0.2',
+                        'cve' => 'CVE-2016-5385'
                     ]
                 ]
             ]

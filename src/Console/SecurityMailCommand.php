@@ -37,9 +37,9 @@ class SecurityMailCommand extends Command
     }
 
     /**
-     * Fire the command
+     * Execute the command
      */
-    public function fire()
+    public function handle()
     {
         // get the path to composer.lock
         $composerLock = base_path('composer.lock');
@@ -55,7 +55,7 @@ class SecurityMailCommand extends Command
         }
 
         // get the recipients and filter out any configuration mistakes
-        $recipients = collect(config('laravel-security-checker.recipients', [ ]))->filter(function ($recipient) {
+        $recipients = collect(config('laravel-security-checker.recipients', [ ]))->filter(function($recipient) {
             return !is_null($recipient) && !empty($recipient);
         });
 

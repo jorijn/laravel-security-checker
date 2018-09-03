@@ -4,6 +4,7 @@ namespace Jorijn\LaravelSecurityChecker;
 
 use Jorijn\LaravelSecurityChecker\Console\SecurityCommand;
 use Jorijn\LaravelSecurityChecker\Console\SecurityMailCommand;
+use Jorijn\LaravelSecurityChecker\Console\SecuritySlackCommand;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
@@ -52,6 +53,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             $this->commands([
                 SecurityCommand::class,
                 SecurityMailCommand::class,
+                SecuritySlackCommand::class,
             ]);
         }
     }
