@@ -3,9 +3,9 @@
 namespace Jorijn\LaravelSecurityChecker\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\SlackMessage;
+use Illuminate\Notifications\Notification;
+use Illuminate\Queue\SerializesModels;
 
 class SecuritySlackNotification extends Notification
 {
@@ -42,7 +42,7 @@ class SecuritySlackNotification extends Notification
      */
     public function via()
     {
-        return [ 'slack' ];
+        return ['slack'];
     }
 
     /**
@@ -55,7 +55,7 @@ class SecuritySlackNotification extends Notification
         return (new SlackMessage)
             ->from(config('app.url'))
             ->content("*Security Check Report:* `{$this->composerLockPath}`")
-            ->attachment(function($attachment) {
+            ->attachment(function ($attachment) {
                 $attachment->content($this->textFormatter())->markdown(['text']);
             });
     }
@@ -75,31 +75,39 @@ class SecuritySlackNotification extends Notification
      */
     protected function textFormatter()
     {
-        $count = count($this->vulnerabilities);
+        $packageCount = \count($this->vulnerabilities);
+        $content = trans_choice('laravel-security-checker::messages.subject_new_vulnerabilities', $packageCount, [
+            'count' => $packageCount,
+        ]);
 
-        $txt = sprintf("%d %s known vulnerabilities\n", $count, 1 === $count ? 'package has' : 'packages have');
-
-        if (0 !== $count) {
+        if ($packageCount > 0) {
             foreach ($this->vulnerabilities as $dependency => $issues) {
-                $dependencyFullName = $dependency.' ('.$issues[ 'version' ].')';
-                $txt .= "\n";
-                $txt .= "*{$dependencyFullName}*"."\n".str_repeat('-', strlen($dependencyFullName))."\n";
+                $dependencyFullName = sprintf('%s (%s)', $dependency, $issues['version']);
 
-                foreach ($issues[ 'advisories' ] as $issue => $details) {
-                    $txt .= ' * ';
-                    if ($details[ 'cve' ]) {
-                        $txt .= "{$details[ 'cve' ]} ";
+                $content .= PHP_EOL;
+                $content .= sprintf('*%s*', $dependencyFullName);
+                $content .= PHP_EOL;
+                $content .= str_repeat('-', \strlen($dependencyFullName));
+                $content .= PHP_EOL;
+
+                foreach ($issues['advisories'] as $issue => $details) {
+                    $content .= ' * ';
+
+                    if ($details['cve']) {
+                        $content .= $details['cve'].' ';
                     }
-                    $txt .= "{$details[ 'title' ]} ";
 
-                    if ('' !== $details[ 'link' ]) {
-                        $txt .= "{$details[ 'link' ]}";
+                    $content .= $details['title'].' ';
+
+                    if (!empty($details['link'])) {
+                        $content .= $details['link'];
                     }
 
-                    $txt .= "\n";
+                    $content .= PHP_EOL;
                 }
             }
         }
-        return $txt;
+
+        return $content;
     }
 }

@@ -50,17 +50,17 @@ class SecurityMailCommand extends Command
         // if the user didn't want any email if there are no results,
         // cancel execution here.
         $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);
-        if (count($checkResult) === 0 && $proceed !== true) {
+        if ($proceed !== true && \count($checkResult) === 0) {
             return 0;
         }
 
         // get the recipients and filter out any configuration mistakes
         $recipients = collect(config('laravel-security-checker.recipients', [ ]))->filter(function($recipient) {
-            return !is_null($recipient) && !empty($recipient);
+            return $recipient !== null && !empty($recipient);
         });
 
         if ($recipients->count() === 0) {
-            $this->error(__('laravel-security-checker::messages.no_recipients_configured'));
+            $this->error(/** @scrutinizer ignore-type */__('laravel-security-checker::messages.no_recipients_configured'));
             return 1;
         }
 
