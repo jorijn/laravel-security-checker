@@ -42,7 +42,7 @@ class SecuritySlackNotification extends Notification
      */
     public function via()
     {
-        return ['slack'];
+        return [ 'slack' ];
     }
 
     /**
@@ -55,8 +55,8 @@ class SecuritySlackNotification extends Notification
         return (new SlackMessage)
             ->from(config('app.url'))
             ->content("*Security Check Report:* `{$this->composerLockPath}`")
-            ->attachment(function ($attachment) {
-                $attachment->content($this->textFormatter())->markdown(['text']);
+            ->attachment(function($attachment) {
+                $attachment->content($this->textFormatter())->markdown([ 'text' ]);
             });
     }
 
@@ -82,7 +82,7 @@ class SecuritySlackNotification extends Notification
 
         if ($packageCount > 0) {
             foreach ($this->vulnerabilities as $dependency => $issues) {
-                $dependencyFullName = sprintf('%s (%s)', $dependency, $issues['version']);
+                $dependencyFullName = sprintf('%s (%s)', $dependency, $issues[ 'version' ]);
 
                 $content .= PHP_EOL;
                 $content .= sprintf('*%s*', $dependencyFullName);
@@ -90,17 +90,17 @@ class SecuritySlackNotification extends Notification
                 $content .= str_repeat('-', \strlen($dependencyFullName));
                 $content .= PHP_EOL;
 
-                foreach ($issues['advisories'] as $issue => $details) {
+                foreach ($issues[ 'advisories' ] as $issue => $details) {
                     $content .= ' * ';
 
-                    if ($details['cve']) {
-                        $content .= $details['cve'].' ';
+                    if ($details[ 'cve' ]) {
+                        $content .= $details[ 'cve' ].' ';
                     }
 
-                    $content .= $details['title'].' ';
+                    $content .= $details[ 'title' ].' ';
 
-                    if (!empty($details['link'])) {
-                        $content .= $details['link'];
+                    if (!empty($details[ 'link' ])) {
+                        $content .= $details[ 'link' ];
                     }
 
                     $content .= PHP_EOL;
