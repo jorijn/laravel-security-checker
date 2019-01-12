@@ -1,5 +1,9 @@
 # Changelog for Laravel Security Checker
 
+## v1.0.0 (2019-01-12)
+* @DevDavido notified me about the SensioLabs Security Checker upgrade, I implemented their changes
+* bumped the package to a stable tag, I think it has matured enough now. :-) 
+
 ## v0.3.0 (2018-08-03)
 * updated to work on Laravel 5.5.x, 5.6.x and 5.7.x, thanks @jorgenb
 * dropped support for PHP 5.x
