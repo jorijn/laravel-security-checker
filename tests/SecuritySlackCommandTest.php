@@ -4,6 +4,7 @@ namespace Jorijn\LaravelSecurityChecker\Tests;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
+use SensioLabs\Security\Result;
 use SensioLabs\Security\SecurityChecker;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -24,11 +25,15 @@ class SecuritySlackCommandTest extends TestCase
         parent::setUp();
 
         // declare fake vulnerability
-        $this->exampleCheckOutput = $this->getFakeVulnerabilityReport();
+        $this->exampleCheckOutput = json_encode($this->getFakeVulnerabilityReport());
+
+        // mock the result class
+        $resultMock = \Mockery::mock(Result::class);
+        $resultMock->shouldReceive('__toString')->andReturn($this->exampleCheckOutput);
 
         // mock the security checker
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($this->exampleCheckOutput);
+        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
@@ -59,7 +64,7 @@ class SecuritySlackCommandTest extends TestCase
             new AnonymousNotifiable,
             SecuritySlackNotification::class,
             function ($notification, $channels, $notifiable) {
-                return $notifiable->routes['slack'] == config('laravel-security-checker.slack_webhook_url');
+                return $notifiable->routes['slack'] === config('laravel-security-checker.slack_webhook_url');
             }
         );
     }
@@ -100,8 +105,10 @@ class SecuritySlackCommandTest extends TestCase
 
         // we have to re-bind the mockery instance for this since our parent one does hold
         // fake vulnerabilities.
+        $resultMock = \Mockery::mock(Result::class);
+        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn([]);
+        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);

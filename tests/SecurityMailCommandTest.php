@@ -5,6 +5,7 @@ namespace Jorijn\LaravelSecurityChecker\Tests;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Jorijn\LaravelSecurityChecker\Mailables\SecurityMail;
+use SensioLabs\Security\Result;
 use SensioLabs\Security\SecurityChecker;
 
 class SecurityMailCommandTest extends TestCase
@@ -24,9 +25,13 @@ class SecurityMailCommandTest extends TestCase
         // declare fake vulnerability
         $this->exampleCheckOutput = $this->getFakeVulnerabilityReport();
 
+        // mock the result class
+        $resultMock = \Mockery::mock(Result::class);
+        $resultMock->shouldReceive('__toString')->andReturn(json_encode($this->exampleCheckOutput));
+
         // mock the security checker
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($this->exampleCheckOutput);
+        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
@@ -84,8 +89,11 @@ class SecurityMailCommandTest extends TestCase
 
         // we have to re-bind the mockery instance for this since our parent one does hold
         // fake vulnerabilities.
+        // mock the result class
+        $resultMock = \Mockery::mock(Result::class);
+        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn([ ]);
+        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
@@ -111,8 +119,10 @@ class SecurityMailCommandTest extends TestCase
 
         // we have to re-bind the mockery instance for this since our parent one does hold
         // fake vulnerabilities.
+        $resultMock = \Mockery::mock(Result::class);
+        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn([ ]);
+        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
