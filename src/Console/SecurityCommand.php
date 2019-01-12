@@ -3,7 +3,7 @@
 namespace Jorijn\LaravelSecurityChecker\Console;
 
 use Illuminate\Console\Command;
-use SensioLabs\Security\Formatters\SimpleFormatter;
+use Jorijn\LaravelSecurityChecker\Formatter\SimpleFormatter;
 use SensioLabs\Security\SecurityChecker;
 
 class SecurityCommand extends Command
