@@ -3,7 +3,7 @@
 namespace Jorijn\LaravelSecurityChecker\Console;
 
 use Illuminate\Console\Command;
-use SensioLabs\Security\Formatters\SimpleFormatter;
+use Jorijn\LaravelSecurityChecker\Formatter\SimpleFormatter;
 use SensioLabs\Security\SecurityChecker;
 
 class SecurityCommand extends Command
@@ -44,7 +44,7 @@ class SecurityCommand extends Command
         $composerLock = base_path('composer.lock');
 
         // and feed it into the SecurityChecker
-        $checkResult = $this->checker->check($composerLock);
+        $checkResult = json_decode((string)$this->checker->check($composerLock), true);
 
         // then display it using the formatter provided for Symfony
         app(SimpleFormatter::class)->displayResults($this->getOutput(), $composerLock, $checkResult);

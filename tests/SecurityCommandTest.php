@@ -2,14 +2,18 @@
 
 namespace Jorijn\LaravelSecurityChecker\Tests;
 
+use SensioLabs\Security\Result;
 use SensioLabs\Security\SecurityChecker;
 
 class SecurityCommandTest extends TestCase
 {
     public function testFireMethod()
     {
+        $resultMock = \Mockery::mock(Result::class);
+        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
+
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn([]);
+        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);

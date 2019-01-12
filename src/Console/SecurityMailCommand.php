@@ -45,7 +45,7 @@ class SecurityMailCommand extends Command
         $composerLock = base_path('composer.lock');
 
         // and feed it into the SecurityChecker
-        $checkResult = $this->checker->check($composerLock);
+        $checkResult = json_decode((string)$this->checker->check($composerLock), true);
 
         // if the user didn't want any email if there are no results,
         // cancel execution here.

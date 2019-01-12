@@ -50,7 +50,7 @@ class SecuritySlackCommand extends Command
         $composerLock = base_path('composer.lock');
 
         // and feed it into the SecurityChecker
-        $vulnerabilities = $this->checker->check($composerLock);
+        $vulnerabilities = json_decode((string)$this->checker->check($composerLock), true);
 
         // cancel execution here if user does not want to be notified when there are 0 vulns.
         $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);
