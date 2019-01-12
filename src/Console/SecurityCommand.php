@@ -44,7 +44,7 @@ class SecurityCommand extends Command
         $composerLock = base_path('composer.lock');
 
         // and feed it into the SecurityChecker
-        $checkResult = $this->checker->check($composerLock);
+        $checkResult = json_decode((string)$this->checker->check($composerLock), true);
 
         // then display it using the formatter provided for Symfony
         app(SimpleFormatter::class)->displayResults($this->getOutput(), $composerLock, $checkResult);
