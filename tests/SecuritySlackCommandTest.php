@@ -55,8 +55,8 @@ class SecuritySlackCommandTest extends TestCase
         $this->assertEquals($res, 0);
 
         // https://github.com/laravel/framework/pull/21379
-        Notification::assertSentTo( 
-            new AnonymousNotifiable, 
+        Notification::assertSentTo(
+            new AnonymousNotifiable,
             SecuritySlackNotification::class,
             function ($notification, $channels, $notifiable) {
                 return $notifiable->routes['slack'] == config('laravel-security-checker.slack_webhook_url');
@@ -81,8 +81,8 @@ class SecuritySlackCommandTest extends TestCase
         // assert that the exit-code is 1
         $this->assertEquals($res, 1);
 
-        Notification::assertNotSentTo( 
-            new AnonymousNotifiable, 
+        Notification::assertNotSentTo(
+            new AnonymousNotifiable,
             SecuritySlackNotification::class
         );
     }
@@ -110,8 +110,8 @@ class SecuritySlackCommandTest extends TestCase
         $res = $this->artisan('security-check:slack');
 
         // check that the notification wasn't sent
-        Notification::assertNotSentTo( 
-            new AnonymousNotifiable, 
+        Notification::assertNotSentTo(
+            new AnonymousNotifiable,
             SecuritySlackNotification::class
         );
 

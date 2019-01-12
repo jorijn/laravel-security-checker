@@ -25,16 +25,23 @@ class SimpleFormatter implements FormatterInterface
             $style = 'info';
         }
 
-        $output->writeln(sprintf('<%s>[%s] %d %s known vulnerabilities</>', $style, $status, $count,
-            1 === $count ? 'package has' : 'packages have'));
+        $output->writeln(sprintf(
+            '<%s>[%s] %d %s known vulnerabilities</>',
+            $style,
+            $status,
+            $count,
+            1 === $count ? 'package has' : 'packages have'
+        ));
 
         if (0 !== $count) {
             $output->write("\n");
 
             foreach ($vulnerabilities as $dependency => $issues) {
                 $dependencyFullName = $dependency.' ('.$issues['version'].')';
-                $output->writeln('<info>'.$dependencyFullName."\n".str_repeat('-',
-                        strlen($dependencyFullName))."</>\n");
+                $output->writeln('<info>'.$dependencyFullName."\n".str_repeat(
+                    '-',
+                    strlen($dependencyFullName)
+                )."</>\n");
 
                 foreach ($issues['advisories'] as $issue => $details) {
                     $output->write(' * ');
