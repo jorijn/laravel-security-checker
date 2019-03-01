@@ -19,8 +19,10 @@ class SecuritySlackCommandTest extends TestCase
 
     /**
      * Set Up
+     *
+     * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
