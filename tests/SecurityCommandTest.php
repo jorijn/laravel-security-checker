@@ -22,6 +22,6 @@ class SecurityCommandTest extends TestCase
         $res = $this->artisan('security-check:now');
 
         // and check if it returns exit-code 0
-        $this->assertEquals($res, 0);
+        $res->assertExitCode(0);
     }
 }

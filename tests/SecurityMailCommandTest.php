@@ -59,7 +59,7 @@ class SecurityMailCommandTest extends TestCase
         });
         
         // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
+        $res->assertExitCode(0);
     }
 
     /**
@@ -77,7 +77,7 @@ class SecurityMailCommandTest extends TestCase
         Mail::assertNotSent(SecurityMail::class);
 
         // assert that the exit-code is 1
-        $this->assertEquals($res, 1);
+        $res->assertExitCode(1);
     }
 
     /**
@@ -107,7 +107,7 @@ class SecurityMailCommandTest extends TestCase
         Mail::assertNotSent(SecurityMail::class);
 
         // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
+        $res->assertExitCode(0);
     }
 
     /**
@@ -139,6 +139,6 @@ class SecurityMailCommandTest extends TestCase
         });
 
         // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
+        $res->assertExitCode(0);
     }
 }

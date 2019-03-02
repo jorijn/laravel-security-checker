@@ -59,7 +59,7 @@ class SecuritySlackCommandTest extends TestCase
         $res = $this->artisan('security-check:slack');
 
         // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
+        $res->assertExitCode(0);
 
         // https://github.com/laravel/framework/pull/21379
         Notification::assertSentTo(
@@ -86,7 +86,7 @@ class SecuritySlackCommandTest extends TestCase
         $res = $this->artisan('security-check:slack');
 
         // assert that the exit-code is 1
-        $this->assertEquals($res, 1);
+        $res->assertExitCode(1);
 
         Notification::assertNotSentTo(
             new AnonymousNotifiable,
@@ -125,6 +125,6 @@ class SecuritySlackCommandTest extends TestCase
         );
 
         // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
+        $res->assertExitCode(0);
     }
 }
