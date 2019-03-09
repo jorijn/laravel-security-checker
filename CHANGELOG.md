@@ -1,5 +1,9 @@
 # Changelog for Laravel Security Checker
 
+## v1.1.0 (2019-03-09)
+* added support for Laravel 5.8 (thanks @DevDavido!)
+* added logging for email and slack commands
+
 ## v1.0.0 (2019-01-12)
 * @DevDavido notified me about the SensioLabs Security Checker upgrade, I implemented their changes
 * bumped the package to a stable tag, I think it has matured enough now. :-) 
