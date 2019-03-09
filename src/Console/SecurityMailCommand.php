@@ -3,6 +3,7 @@
 namespace Jorijn\LaravelSecurityChecker\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Jorijn\LaravelSecurityChecker\Mailables\SecurityMail;
 use SensioLabs\Security\SecurityChecker;
@@ -45,12 +46,14 @@ class SecurityMailCommand extends Command
         $composerLock = base_path('composer.lock');
 
         // and feed it into the SecurityChecker
+        Log::debug('about to check for vulnerabilities');
         $checkResult = json_decode((string)$this->checker->check($composerLock), true);
 
         // if the user didn't want any email if there are no results,
         // cancel execution here.
         $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);
         if ($proceed !== true && \count($checkResult) === 0) {
+            Log::info('no vulnerabilities were found, not sending any email');
             return 0;
         }
 
@@ -60,12 +63,14 @@ class SecurityMailCommand extends Command
         });
 
         if ($recipients->count() === 0) {
+            Log::error('vulnerabilities were found, but there are no recipients configured');
             $this->error(
                 /** @scrutinizer ignore-type */__('laravel-security-checker::messages.no_recipients_configured')
             );
             return 1;
         }
 
+        Log::warning('vulnerabilities were found, emailed to configured recipients');
         Mail::to($recipients->toArray())->send(new SecurityMail($checkResult));
 
         return 0;
