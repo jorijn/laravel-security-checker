@@ -2,7 +2,12 @@
   "name": "jorijn/laravel-security-checker",
   "description": "Added Laravel functionality to SensioLabs Security Checker. Adds a command to check for, and optionally emails you, vulnerabilities when they affect you.",
   "license": "MIT",
-  "keywords": ["laravel", "security", "composer", "dependencies"],
+  "keywords": [
+    "laravel",
+    "security",
+    "composer",
+    "dependencies"
+  ],
   "authors": [
     {
       "name": "Jorijn Schrijvershof",
@@ -28,6 +33,9 @@
     "orchestra/testbench": "3.5.x|3.6.x|3.7.x|3.8.x",
     "mockery/mockery": "^1.2"
   },
+  "suggest": {
+    "laravel/slack-notification-channel": "In Laravel 5.8 they extracted the Slack notification channel into a first-party package. If you run 5.8, you will need to install this package too."
+  },
   "autoload": {
     "psr-4": {
       "Jorijn\\LaravelSecurityChecker\\": "src/"
@@ -44,7 +52,9 @@
   },
   "extra": {
     "laravel": {
-      "providers": ["Jorijn\\LaravelSecurityChecker\\ServiceProvider"]
+      "providers": [
+        "Jorijn\\LaravelSecurityChecker\\ServiceProvider"
+      ]
     }
   }
 }
