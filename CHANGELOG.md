@@ -1,5 +1,8 @@
 # Changelog for Laravel Security Checker
 
+## v1.1.1 (2019-09-23)
+* added support for Laravel 6.0 (thanks @davejamesmiller!)
+
 ## v1.1.0 (2019-03-09)
 * added support for Laravel 5.8 (thanks @DevDavido!)
 * added logging for email and slack commands
