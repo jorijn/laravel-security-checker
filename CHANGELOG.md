@@ -1,5 +1,8 @@
 # Changelog for Laravel Security Checker
 
+## v1.2.0 (2020-03-03)
+* improved the `security:now` command to return exit code 1 when vulnerabilities were found, this enables integration into CI flows
+
 ## v1.1.1 (2019-09-23)
 * added support for Laravel 6.0 (thanks @davejamesmiller!)
 
