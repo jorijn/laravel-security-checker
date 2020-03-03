@@ -49,6 +49,6 @@ class SecurityCommand extends Command
         // then display it using the formatter provided for Symfony
         app(SimpleFormatter::class)->displayResults($this->getOutput(), $composerLock, $checkResult);
 
-        return 0;
+        return (int) (count($checkResult) > 0);
     }
 }
