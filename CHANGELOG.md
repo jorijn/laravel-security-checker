@@ -1,5 +1,10 @@
 # Changelog for Laravel Security Checker
 
+## v2.0.0 (2020-03-04)
+* dropped support for PHP 7.0, minimum version is now PHP 7.1.3
+* upgraded `sensiolabs/security-checker` to a new major version (^v6.0.0)
+* added support for Laravel 7 (thanks @cino!)
+
 ## v1.2.0 (2020-03-03)
 * improved the `security:now` command to return exit code 1 when vulnerabilities were found, this enables integration into CI flows
 
