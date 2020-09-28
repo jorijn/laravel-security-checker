@@ -1,5 +1,10 @@
 # Changelog for Laravel Security Checker
 
+## v2.1.0 (2020-09-28)
+* dropped support for PHP 7.1, minimum version is now PHP 7.2
+* upgraded `guzzlehttp/guzzle` to a new major version (^v7.0.0)
+* added support for Laravel 8 (thanks @romanstingler, @nessimabadi!)
+
 ## v2.0.0 (2020-03-04)
 * dropped support for PHP 7.0, minimum version is now PHP 7.1.3
 * upgraded `sensiolabs/security-checker` to a new major version (^v6.0.0)
