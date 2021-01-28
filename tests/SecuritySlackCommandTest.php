@@ -4,11 +4,8 @@ namespace Jorijn\LaravelSecurityChecker\Tests;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
-use SensioLabs\Security\Result;
-use SensioLabs\Security\SecurityChecker;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
-use Mockery\CountValidator\Exception;
 
 class SecuritySlackCommandTest extends TestCase
 {
@@ -24,20 +21,6 @@ class SecuritySlackCommandTest extends TestCase
     {
         parent::setUp();
 
-        // declare fake vulnerability
-        $this->exampleCheckOutput = json_encode($this->getFakeVulnerabilityReport());
-
-        // mock the result class
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn($this->exampleCheckOutput);
-
-        // mock the security checker
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
         // declare testing mode on the notification
         Notification::fake();
     }
@@ -47,6 +30,8 @@ class SecuritySlackCommandTest extends TestCase
      */
     public function testHandleMethod()
     {
+        $this->setVulnerableBasePath();
+
         // set the recipient for testing
         Config::set(
             'laravel-security-checker.slack_webhook_url',
@@ -74,6 +59,8 @@ class SecuritySlackCommandTest extends TestCase
      */
     public function testHandleMethodWithoutSlackWebHook()
     {
+        $this->setVulnerableBasePath();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.slack_webhook_url', null);
 
@@ -97,21 +84,13 @@ class SecuritySlackCommandTest extends TestCase
      */
     public function testHandleMethodWithoutVulnerabilities()
     {
+        $this->setSafeBasePath();
+
         // set the recipient for testing
         Config::set(
             'laravel-security-checker.slack_webhook_url',
             'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
         );
-
-        // we have to re-bind the mockery instance for this since our parent one does hold
-        // fake vulnerabilities.
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
 
         // execute the command
         $res = $this->artisan('security-check:slack');

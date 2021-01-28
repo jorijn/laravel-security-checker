@@ -2,11 +2,14 @@
 
 namespace Jorijn\LaravelSecurityChecker\Console;
 
+use Enlightn\SecurityChecker\AdvisoryAnalyzer;
+use Enlightn\SecurityChecker\AdvisoryFetcher;
+use Enlightn\SecurityChecker\AdvisoryParser;
+use Enlightn\SecurityChecker\Composer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
-use SensioLabs\Security\SecurityChecker;
 
 class SecuritySlackCommand extends Command
 {
@@ -19,23 +22,6 @@ class SecuritySlackCommand extends Command
      * @var string
      */
     protected $description = 'Send vulnerabilities to a Slack channel.';
-
-    /**
-     * @var SecurityChecker
-     */
-    protected $checker;
-
-    /**
-     * SecurityCommand constructor.
-     *
-     * @param SecurityChecker $checker
-     */
-    public function __construct(SecurityChecker $checker)
-    {
-        parent::__construct();
-
-        $this->checker = $checker;
-    }
 
     /**
      * Execute the command
@@ -53,7 +39,9 @@ class SecuritySlackCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $vulnerabilities = json_decode((string)$this->checker->check($composerLock), true);
+        $parser = new AdvisoryParser((new AdvisoryFetcher)->fetchAdvisories());
+        $dependencies = (new Composer)->getDependencies($composerLock);
+        $vulnerabilities = (new AdvisoryAnalyzer($parser->getAdvisories()))->analyzeDependencies($dependencies);
 
         // cancel execution here if user does not want to be notified when there are 0 vulns.
         $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);

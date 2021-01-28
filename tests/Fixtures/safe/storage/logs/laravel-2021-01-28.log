@@ -1,0 +1,16 @@
+[2021-01-28 12:39:12] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:39:13] testing.INFO: no vulnerabilities were found, not sending any email  
+[2021-01-28 12:39:13] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:39:14] testing.WARNING: vulnerabilities were found, emailed to configured recipients  
+[2021-01-28 12:39:41] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:39:42] testing.INFO: no vulnerabilities were found, not sending any email  
+[2021-01-28 12:39:42] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:39:42] testing.WARNING: vulnerabilities were found, emailed to configured recipients  
+[2021-01-28 12:42:42] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:42:43] testing.INFO: no vulnerabilities were found, not sending a slack notification  
+[2021-01-28 12:43:11] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:43:12] testing.INFO: no vulnerabilities were found, not sending any email  
+[2021-01-28 12:43:12] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:43:12] testing.WARNING: vulnerabilities were found, emailed to configured recipients  
+[2021-01-28 12:43:13] testing.DEBUG: about to check for vulnerabilities  
+[2021-01-28 12:43:13] testing.INFO: no vulnerabilities were found, not sending a slack notification  

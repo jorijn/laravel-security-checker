@@ -15,14 +15,14 @@
     }
   ],
   "require": {
-    "sensiolabs/security-checker": "^6.0.0",
     "php": ">=7.2",
     "guzzlehttp/guzzle": "^7.0",
     "illuminate/support": "5.5.x|5.6.x|5.7.x|5.8.x|6.x|7.x|8.*",
     "illuminate/console": "5.5.x|5.6.x|5.7.x|5.8.x|6.x|7.x|8.*",
     "illuminate/mail": "5.5.x|5.6.x|5.7.x|5.8.x|6.x|7.x|8.*",
     "laravel/framework": "5.5.x|5.6.x|5.7.x|5.8.x|6.x|7.x|8.*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "enlightn/security-checker": "^1.2"
   },
   "require-dev": {
     "illuminate/config": "5.5.x|5.6.x|5.7.x|5.8.x|6.x|7.x|8.*",
