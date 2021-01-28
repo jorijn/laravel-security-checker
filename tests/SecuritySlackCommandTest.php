@@ -15,28 +15,23 @@ class SecuritySlackCommandTest extends TestCase
     protected $exampleCheckOutput;
 
     /**
-     * Set Up
-     */
-    public function setUp()
-    {
-        parent::setUp();
-
-        // declare testing mode on the notification
-        Notification::fake();
-    }
-
-    /**
      * Tests if the notification get's sent
      */
     public function testHandleMethod()
     {
-        $this->setVulnerableBasePath();
+        Notification::fake();
+
+        $this->bindFailingSecurityChecker();
 
         // set the recipient for testing
         Config::set(
             'laravel-security-checker.slack_webhook_url',
             'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
         );
+
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         // execute the command
         $res = $this->artisan('security-check:slack');
@@ -59,13 +54,19 @@ class SecuritySlackCommandTest extends TestCase
      */
     public function testHandleMethodWithoutSlackWebHook()
     {
-        $this->setVulnerableBasePath();
+        Notification::fake();
+
+        $this->bindFailingSecurityChecker();
 
         // set the recipient for testing
         Config::set('laravel-security-checker.slack_webhook_url', null);
 
         // Class should throw exception if no webhook is configured
         $this->expectException(\Exception::class);
+
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         // execute the command
         $res = $this->artisan('security-check:slack');
@@ -84,13 +85,19 @@ class SecuritySlackCommandTest extends TestCase
      */
     public function testHandleMethodWithoutVulnerabilities()
     {
-        $this->setSafeBasePath();
+        Notification::fake();
+
+        $this->bindPassingSecurityChecker();
 
         // set the recipient for testing
         Config::set(
             'laravel-security-checker.slack_webhook_url',
             'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
         );
+
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         // execute the command
         $res = $this->artisan('security-check:slack');

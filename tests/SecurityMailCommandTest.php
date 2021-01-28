@@ -9,25 +9,20 @@ use Jorijn\LaravelSecurityChecker\Mailables\SecurityMail;
 class SecurityMailCommandTest extends TestCase
 {
     /**
-     * Set Up
-     */
-    public function setUp()
-    {
-        parent::setUp();
-
-        // declare testing mode on the mailer
-        Mail::fake();
-    }
-
-    /**
      * Tests if the email will be sent
      */
     public function testFireMethod()
     {
-        $this->setVulnerableBasePath();
+        Mail::fake();
+
+        $this->bindFailingSecurityChecker();
 
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
+
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         // execute the command
         $res = $this->artisan('security-check:email');
@@ -45,10 +40,16 @@ class SecurityMailCommandTest extends TestCase
      */
     public function testFireMethodWithoutRecipients()
     {
-        $this->setVulnerableBasePath();
+        Mail::fake();
+
+        $this->bindFailingSecurityChecker();
 
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ ]);
+
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         // execute the command
         $res = $this->artisan('security-check:email');
@@ -65,11 +66,17 @@ class SecurityMailCommandTest extends TestCase
      */
     public function testFireMethodWithoutVulnerabilities()
     {
+        Mail::fake();
+
+        $this->bindPassingSecurityChecker();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
         Config::set('laravel-security-checker.notify_even_without_vulnerabilities', false);
 
-        $this->setSafeBasePath();
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         // execute the command
         $res = $this->artisan('security-check:email');
@@ -86,11 +93,17 @@ class SecurityMailCommandTest extends TestCase
      */
     public function testFireMethodWithoutVulnerabilitiesWithSending()
     {
+        Mail::fake();
+
+        $this->bindPassingSecurityChecker();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
         Config::set('laravel-security-checker.notify_even_without_vulnerabilities', true);
 
-        $this->setSafeBasePath();
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         // execute the command
         $res = $this->artisan('security-check:email');

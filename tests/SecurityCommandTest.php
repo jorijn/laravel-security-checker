@@ -6,7 +6,11 @@ class SecurityCommandTest extends TestCase
 {
     public function testFireMethod()
     {
-        $this->setSafeBasePath();
+        $this->bindPassingSecurityChecker();
+
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         $this->assertEquals(0, $this->artisan(
             'security-check:now'
@@ -15,7 +19,11 @@ class SecurityCommandTest extends TestCase
 
     public function testFireMethodWithVulnerabilitiesFound()
     {
-        $this->setVulnerableBasePath();
+        $this->bindFailingSecurityChecker();
+
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
 
         $this->assertEquals(1, $this->artisan(
             'security-check:now'

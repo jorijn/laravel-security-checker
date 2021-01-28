@@ -2,7 +2,6 @@
 
 namespace Jorijn\LaravelSecurityChecker\Tests;
 
-use Illuminate\Support\Facades\Config;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
 
 class SecuritySlackTest extends TestCase
@@ -12,6 +11,10 @@ class SecuritySlackTest extends TestCase
      */
     public function testSlackNotification()
     {
+        if (! class_exists(Illuminate\Notifications\Messages\SlackMessage::class)) {
+            $this->markTestSkipped();
+        }
+
         $vulnerabilities = $this->getFakeVulnerabilityReport();
         $composerLockPath = '/path/to/composer.lock';
         $notification = new SecuritySlackNotification($vulnerabilities, $composerLockPath);

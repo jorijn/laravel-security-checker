@@ -2,10 +2,7 @@
 
 namespace Jorijn\LaravelSecurityChecker\Console;
 
-use Enlightn\SecurityChecker\AdvisoryAnalyzer;
-use Enlightn\SecurityChecker\AdvisoryFetcher;
-use Enlightn\SecurityChecker\AdvisoryParser;
-use Enlightn\SecurityChecker\Composer;
+use Enlightn\SecurityChecker\SecurityChecker;
 use Illuminate\Console\Command;
 use Jorijn\LaravelSecurityChecker\Formatter\SimpleFormatter;
 
@@ -22,6 +19,23 @@ class SecurityCommand extends Command
     protected $description = 'Checks composer.lock for any vulnerabilities against the SensioLabs checker.';
 
     /**
+     * @var SecurityChecker
+     */
+    protected $checker;
+
+    /**
+     * SecurityCommand constructor.
+     *
+     * @param SecurityChecker $checker
+     */
+    public function __construct(SecurityChecker $checker)
+    {
+        parent::__construct();
+
+        $this->checker = $checker;
+    }
+
+    /**
      * Execute the command
      */
     public function handle()
@@ -29,12 +43,8 @@ class SecurityCommand extends Command
         // get the path to composer.lock
         $composerLock = base_path('composer.lock');
 
-        $parser = new AdvisoryParser((new AdvisoryFetcher)->fetchAdvisories());
-
-        $dependencies = (new Composer)->getDependencies($composerLock);
-
-        // and feed it into the AdvisoryAnalyzer
-        $checkResult = (new AdvisoryAnalyzer($parser->getAdvisories()))->analyzeDependencies($dependencies);
+        // and feed it into the SecurityChecker
+        $checkResult = $this->checker->check($composerLock);
 
         // then display it using the formatter provided
         app(SimpleFormatter::class)->displayResults($this->getOutput(), $composerLock, $checkResult);

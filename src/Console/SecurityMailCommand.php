@@ -2,10 +2,7 @@
 
 namespace Jorijn\LaravelSecurityChecker\Console;
 
-use Enlightn\SecurityChecker\AdvisoryAnalyzer;
-use Enlightn\SecurityChecker\AdvisoryFetcher;
-use Enlightn\SecurityChecker\AdvisoryParser;
-use Enlightn\SecurityChecker\Composer;
+use Enlightn\SecurityChecker\SecurityChecker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +21,23 @@ class SecurityMailCommand extends Command
     protected $description = 'Emails any vulnerabilities for packages you have in your composer.lock file.';
 
     /**
+     * @var SecurityChecker
+     */
+    protected $checker;
+
+    /**
+     * SecurityCommand constructor.
+     *
+     * @param SecurityChecker $checker
+     */
+    public function __construct(SecurityChecker $checker)
+    {
+        parent::__construct();
+
+        $this->checker = $checker;
+    }
+
+    /**
      * Execute the command
      */
     public function handle()
@@ -33,9 +47,7 @@ class SecurityMailCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $parser = new AdvisoryParser((new AdvisoryFetcher)->fetchAdvisories());
-        $dependencies = (new Composer)->getDependencies($composerLock);
-        $checkResult = (new AdvisoryAnalyzer($parser->getAdvisories()))->analyzeDependencies($dependencies);
+        $checkResult = $this->checker->check($composerLock);
 
         // if the user didn't want any email if there are no results,
         // cancel execution here.
