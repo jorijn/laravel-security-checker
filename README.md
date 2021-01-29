@@ -2,12 +2,10 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
 [![Total Downloads](https://img.shields.io/packagist/dt/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
 [![License](https://img.shields.io/github/license/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
-[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/jorijn/laravel-security-checker.svg)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
-[![Code Coverage](https://img.shields.io/scrutinizer/coverage/g/jorijn/laravel-security-checker.svg)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
-[![Build Status](https://travis-ci.org/Jorijn/laravel-security-checker.svg?branch=master)](https://travis-ci.org/Jorijn/laravel-security-checker)
+![Tests](https://github.com/Jorijn/laravel-security-checker/workflows/tests/badge.svg)
 
 This package provides an effortless way for you to check your local `composer.lock` against the [Security Advisories Database](https://github.com/FriendsOfPHP/security-advisories). 
-It can either display the results in your console or email them to you on a scheduled basis. It uses Laravel's markdown system so it should fit nicely in your styling. 
+It can either display the results in your console or email them to you on a scheduled basis. It uses Laravel's markdown system, so it should fit nicely in your styling. 
 
 #### Screenshot
 <img width="647" alt="screenshot-email" src="https://user-images.githubusercontent.com/85466/28497517-9e41580e-6f89-11e7-9c4e-0ebf713add6a.png">
@@ -18,14 +16,6 @@ Require this package with composer using the following command:
 ```bash
 composer require jorijn/laravel-security-checker
 ```
-
-After updating composer, add the service provider to the `providers` array in `config/app.php`
-
-```php
-Jorijn\LaravelSecurityChecker\ServiceProvider::class,
-```
-
-_Note: On Laravel 5.5 and up, this package will use auto discovery, and the above step is no longer required._
 
 ### Configuration
 
