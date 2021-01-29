@@ -2,7 +2,6 @@
 
 namespace Jorijn\LaravelSecurityChecker\Tests;
 
-use Illuminate\Support\Facades\Config;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
 
 class SecuritySlackTest extends TestCase

@@ -5,59 +5,27 @@ namespace Jorijn\LaravelSecurityChecker\Tests;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Jorijn\LaravelSecurityChecker\Mailables\SecurityMail;
-use SensioLabs\Security\Result;
-use SensioLabs\Security\SecurityChecker;
 
 class SecurityMailCommandTest extends TestCase
 {
-    /**
-     * @var array
-     */
-    protected $exampleCheckOutput;
-    
-    /**
-     * Set Up
-     */
-    public function setUp()
-    {
-        parent::setUp();
-
-        // declare fake vulnerability
-        $this->exampleCheckOutput = $this->getFakeVulnerabilityReport();
-
-        // mock the result class
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn(json_encode($this->exampleCheckOutput));
-
-        // mock the security checker
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
-        // declare testing mode on the mailer
-        Mail::fake();
-    }
-
     /**
      * Tests if the email will be sent
      */
     public function testFireMethod()
     {
+        Mail::fake();
+
+        $this->bindFailingSecurityChecker();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
 
         // execute the command
-        $res = $this->artisan('security-check:email');
+        $this->artisan('security-check:email')->assertExitCode(0);
 
         Mail::assertSent(SecurityMail::class, function (SecurityMail $mail) {
-            return $mail->hasTo('recipient@example.net')
-                && $this->exampleCheckOutput === $mail->getCheckResult();
+            return $mail->hasTo('recipient@example.net');
         });
-        
-        // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
     }
 
     /**
@@ -65,17 +33,17 @@ class SecurityMailCommandTest extends TestCase
      */
     public function testFireMethodWithoutRecipients()
     {
+        Mail::fake();
+
+        $this->bindFailingSecurityChecker();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ ]);
 
-        // execute the command
-        $res = $this->artisan('security-check:email');
+        $this->artisan('security-check:email')->assertExitCode(1);
 
         // check that the mail wasn't sent
         Mail::assertNotSent(SecurityMail::class);
-
-        // assert that the exit-code is 1
-        $this->assertEquals($res, 1);
     }
 
     /**
@@ -83,29 +51,18 @@ class SecurityMailCommandTest extends TestCase
      */
     public function testFireMethodWithoutVulnerabilities()
     {
+        Mail::fake();
+
+        $this->bindPassingSecurityChecker();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
         Config::set('laravel-security-checker.notify_even_without_vulnerabilities', false);
 
-        // we have to re-bind the mockery instance for this since our parent one does hold
-        // fake vulnerabilities.
-        // mock the result class
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
-        // execute the command
-        $res = $this->artisan('security-check:email');
+       $this->artisan('security-check:email')->assertExitCode(0);
 
         // check that the mail wasn't sent
         Mail::assertNotSent(SecurityMail::class);
-
-        // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
     }
 
     /**
@@ -113,30 +70,20 @@ class SecurityMailCommandTest extends TestCase
      */
     public function testFireMethodWithoutVulnerabilitiesWithSending()
     {
+        Mail::fake();
+
+        $this->bindPassingSecurityChecker();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
         Config::set('laravel-security-checker.notify_even_without_vulnerabilities', true);
 
-        // we have to re-bind the mockery instance for this since our parent one does hold
-        // fake vulnerabilities.
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
-        // execute the command
-        $res = $this->artisan('security-check:email');
+        $this->artisan('security-check:email')->assertExitCode(0);
 
         // check that the mail was sent
         Mail::assertSent(SecurityMail::class, function (SecurityMail $mail) {
             return $mail->hasTo('recipient@example.net')
                 && [ ] === $mail->getCheckResult();
         });
-
-        // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
     }
 }

@@ -6,7 +6,7 @@
 [![Code Coverage](https://img.shields.io/scrutinizer/coverage/g/jorijn/laravel-security-checker.svg)](https://scrutinizer-ci.com/g/Jorijn/laravel-security-checker/?branch=master)
 [![Build Status](https://travis-ci.org/Jorijn/laravel-security-checker.svg?branch=master)](https://travis-ci.org/Jorijn/laravel-security-checker)
 
-This package provides an effortless way for you to check your local `composer.lock` against the [Symfony Security Advisories Checker](https://security.sensiolabs.org/). 
+This package provides an effortless way for you to check your local `composer.lock` against the [Security Advisories Database](https://github.com/FriendsOfPHP/security-advisories). 
 It can either display the results in your console or email them to you on a scheduled basis. It uses Laravel's markdown system so it should fit nicely in your styling. 
 
 #### Screenshot
@@ -86,7 +86,7 @@ protected function schedule(Schedule $schedule)
 ```
 
 ## Running as a command
-This package provides a wrapper around the SensioLab's Security Checker command. You can call it using `php artisan security-check:now`.
+This package provides a wrapper around the [Enlightn Security Checker](https://github.com/enlightn/security-checker) command. You can call it using `php artisan security-check:now`.
  
 ![screenshot-console](https://user-images.githubusercontent.com/85466/28452254-17f3476e-6df2-11e7-9e5e-1c3d52b57722.png)
 

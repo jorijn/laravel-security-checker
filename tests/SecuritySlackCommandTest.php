@@ -4,11 +4,8 @@ namespace Jorijn\LaravelSecurityChecker\Tests;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
-use SensioLabs\Security\Result;
-use SensioLabs\Security\SecurityChecker;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
-use Mockery\CountValidator\Exception;
 
 class SecuritySlackCommandTest extends TestCase
 {
@@ -18,46 +15,21 @@ class SecuritySlackCommandTest extends TestCase
     protected $exampleCheckOutput;
 
     /**
-     * Set Up
-     */
-    public function setUp()
-    {
-        parent::setUp();
-
-        // declare fake vulnerability
-        $this->exampleCheckOutput = json_encode($this->getFakeVulnerabilityReport());
-
-        // mock the result class
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn($this->exampleCheckOutput);
-
-        // mock the security checker
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
-        // declare testing mode on the notification
-        Notification::fake();
-    }
-
-    /**
      * Tests if the notification get's sent
      */
     public function testHandleMethod()
     {
+        Notification::fake();
+
+        $this->bindFailingSecurityChecker();
+
         // set the recipient for testing
         Config::set(
             'laravel-security-checker.slack_webhook_url',
             'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
         );
 
-        // execute the command
-        $res = $this->artisan('security-check:slack');
-
-        // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
+        $this->artisan('security-check:slack')->assertExitCode(0);
 
         // https://github.com/laravel/framework/pull/21379
         Notification::assertSentTo(
@@ -74,17 +46,17 @@ class SecuritySlackCommandTest extends TestCase
      */
     public function testHandleMethodWithoutSlackWebHook()
     {
+        Notification::fake();
+
+        $this->bindFailingSecurityChecker();
+
         // set the recipient for testing
         Config::set('laravel-security-checker.slack_webhook_url', null);
 
         // Class should throw exception if no webhook is configured
         $this->expectException(\Exception::class);
 
-        // execute the command
-        $res = $this->artisan('security-check:slack');
-
-        // assert that the exit-code is 1
-        $this->assertEquals($res, 1);
+        $this->artisan('security-check:slack')->assertExitCode(1);
 
         Notification::assertNotSentTo(
             new AnonymousNotifiable,
@@ -97,32 +69,22 @@ class SecuritySlackCommandTest extends TestCase
      */
     public function testHandleMethodWithoutVulnerabilities()
     {
+        Notification::fake();
+
+        $this->bindPassingSecurityChecker();
+
         // set the recipient for testing
         Config::set(
             'laravel-security-checker.slack_webhook_url',
             'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
         );
 
-        // we have to re-bind the mockery instance for this since our parent one does hold
-        // fake vulnerabilities.
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
-        // execute the command
-        $res = $this->artisan('security-check:slack');
+        $this->artisan('security-check:slack')->assertExitCode(0);
 
         // check that the notification wasn't sent
         Notification::assertNotSentTo(
             new AnonymousNotifiable,
             SecuritySlackNotification::class
         );
-
-        // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
     }
 }

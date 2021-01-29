@@ -2,46 +2,23 @@
 
 namespace Jorijn\LaravelSecurityChecker\Tests;
 
-use SensioLabs\Security\Result;
-use SensioLabs\Security\SecurityChecker;
-
 class SecurityCommandTest extends TestCase
 {
     public function testFireMethod()
     {
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock->shouldReceive('__toString')->andReturn(json_encode([]));
+        $this->bindPassingSecurityChecker();
 
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
-        // call the command
-        $res = $this->artisan('security-check:now');
-
-        // and check if it returns exit-code 0
-        $this->assertEquals($res, 0);
+        $this->artisan(
+            'security-check:now'
+        )->assertExitCode(0);
     }
 
     public function testFireMethodWithVulnerabilitiesFound()
     {
-        $resultMock = \Mockery::mock(Result::class);
-        $resultMock
-            ->shouldReceive('__toString')
-            ->andReturn(json_encode($this->getFakeVulnerabilityReport()));
+        $this->bindFailingSecurityChecker();
 
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($resultMock);
-
-        // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
-
-        // call the command
-        $res = $this->artisan('security-check:now');
-
-        // and check if it returns exit-code 1 (error state)
-        $this->assertEquals($res, 1);
+        $this->artisan(
+            'security-check:now'
+        )->assertExitCode(1);
     }
 }

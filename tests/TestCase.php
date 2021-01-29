@@ -2,6 +2,7 @@
 
 namespace Jorijn\LaravelSecurityChecker\Tests;
 
+use Enlightn\SecurityChecker\SecurityChecker;
 use Jorijn\LaravelSecurityChecker\ServiceProvider;
 
 class TestCase extends \Orchestra\Testbench\TestCase
@@ -13,6 +14,24 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [ServiceProvider::class];
+    }
+
+    protected function bindPassingSecurityChecker()
+    {
+        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
+        $securityCheckerMock->shouldReceive('check')->andReturn([]);
+
+        // bind Mockery instance to the app container
+        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
+    }
+
+    protected function bindFailingSecurityChecker()
+    {
+        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
+        $securityCheckerMock->shouldReceive('check')->andReturn($this->getFakeVulnerabilityReport());
+
+        // bind Mockery instance to the app container
+        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
     }
 
     /**

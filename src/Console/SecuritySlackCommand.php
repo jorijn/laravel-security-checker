@@ -2,11 +2,11 @@
 
 namespace Jorijn\LaravelSecurityChecker\Console;
 
+use Enlightn\SecurityChecker\SecurityChecker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
-use SensioLabs\Security\SecurityChecker;
 
 class SecuritySlackCommand extends Command
 {
@@ -53,7 +53,7 @@ class SecuritySlackCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $vulnerabilities = json_decode((string)$this->checker->check($composerLock), true);
+        $vulnerabilities = $this->checker->check($composerLock);
 
         // cancel execution here if user does not want to be notified when there are 0 vulns.
         $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);
