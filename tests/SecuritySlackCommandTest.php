@@ -29,15 +29,7 @@ class SecuritySlackCommandTest extends TestCase
             'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
         );
 
-        if (method_exists($this, 'withoutMockingConsoleOutput')) {
-            $this->withoutMockingConsoleOutput();
-        }
-
-        // execute the command
-        $res = $this->artisan('security-check:slack');
-
-        // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
+        $this->artisan('security-check:slack')->assertExitCode(0);
 
         // https://github.com/laravel/framework/pull/21379
         Notification::assertSentTo(
@@ -64,15 +56,7 @@ class SecuritySlackCommandTest extends TestCase
         // Class should throw exception if no webhook is configured
         $this->expectException(\Exception::class);
 
-        if (method_exists($this, 'withoutMockingConsoleOutput')) {
-            $this->withoutMockingConsoleOutput();
-        }
-
-        // execute the command
-        $res = $this->artisan('security-check:slack');
-
-        // assert that the exit-code is 1
-        $this->assertEquals($res, 1);
+        $this->artisan('security-check:slack')->assertExitCode(1);
 
         Notification::assertNotSentTo(
             new AnonymousNotifiable,
@@ -95,20 +79,12 @@ class SecuritySlackCommandTest extends TestCase
             'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
         );
 
-        if (method_exists($this, 'withoutMockingConsoleOutput')) {
-            $this->withoutMockingConsoleOutput();
-        }
-
-        // execute the command
-        $res = $this->artisan('security-check:slack');
+        $this->artisan('security-check:slack')->assertExitCode(0);
 
         // check that the notification wasn't sent
         Notification::assertNotSentTo(
             new AnonymousNotifiable,
             SecuritySlackNotification::class
         );
-
-        // assert that the exit-code is 0
-        $this->assertEquals($res, 0);
     }
 }

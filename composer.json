@@ -1,6 +1,6 @@
 {
   "name": "jorijn/laravel-security-checker",
-  "description": "Added Laravel functionality to SensioLabs Security Checker. Adds a command to check for, and optionally emails you, vulnerabilities when they affect you.",
+  "description": "Added Laravel functionality to the Enlightn Security Checker. Adds a command to check for, and optionally emails you, vulnerabilities when they affect you.",
   "license": "MIT",
   "keywords": [
     "laravel",
@@ -15,21 +15,21 @@
     }
   ],
   "require": {
-    "php": ">=7.2",
+    "php": ">=7.2|^8.0",
     "guzzlehttp/guzzle": "^7.0",
-    "laravel/framework": "^5.5|^6.0|^7.0|^8.0",
+    "laravel/framework": "^6.0|^7.0|^8.0",
     "ext-json": "*",
     "enlightn/security-checker": "^1.3"
   },
   "require-dev": {
+    "laravel/slack-notification-channel": "^1.0|^2.0",
     "phpunit/phpunit": "^6.0|^7.0|^8.0|^9.0",
-    "scrutinizer/ocular": "~1.1",
     "squizlabs/php_codesniffer": "~2.3",
-    "orchestra/testbench": "^3.0|^4.0|^5.0|^6.0",
+    "orchestra/testbench": "^4.0|^5.0|^6.0",
     "mockery/mockery": "^1.2"
   },
   "suggest": {
-    "laravel/slack-notification-channel": "In Laravel 5.8 they extracted the Slack notification channel into a first-party package. If you run 5.8, you will need to install this package too."
+    "laravel/slack-notification-channel": "If you need slack notifications, you must install this package."
   },
   "autoload": {
     "psr-4": {

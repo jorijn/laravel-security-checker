@@ -11,10 +11,6 @@ class SecuritySlackTest extends TestCase
      */
     public function testSlackNotification()
     {
-        if (! class_exists(Illuminate\Notifications\Messages\SlackMessage::class)) {
-            $this->markTestSkipped('this test is skipped because package `laravel/slack-notification-channel` is not installed.');
-        }
-
         $vulnerabilities = $this->getFakeVulnerabilityReport();
         $composerLockPath = '/path/to/composer.lock';
         $notification = new SecuritySlackNotification($vulnerabilities, $composerLockPath);

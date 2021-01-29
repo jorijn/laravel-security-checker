@@ -8,25 +8,17 @@ class SecurityCommandTest extends TestCase
     {
         $this->bindPassingSecurityChecker();
 
-        if (method_exists($this, 'withoutMockingConsoleOutput')) {
-            $this->withoutMockingConsoleOutput();
-        }
-
-        $this->assertEquals(0, $this->artisan(
+        $this->artisan(
             'security-check:now'
-        ));
+        )->assertExitCode(0);
     }
 
     public function testFireMethodWithVulnerabilitiesFound()
     {
         $this->bindFailingSecurityChecker();
 
-        if (method_exists($this, 'withoutMockingConsoleOutput')) {
-            $this->withoutMockingConsoleOutput();
-        }
-
-        $this->assertEquals(1, $this->artisan(
+        $this->artisan(
             'security-check:now'
-        ));
+        )->assertExitCode(1);
     }
 }
