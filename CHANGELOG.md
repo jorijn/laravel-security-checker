@@ -1,5 +1,14 @@
 # Changelog for Laravel Security Checker
 
+## v2.2.0 (2021-02-03)
+A big thank you to @paras-malhotra and Enlightn for helping out this release.
+
+* switched out travis with github actions, tests will now run in a matrix from Laravel 6 to 8 in combination with PHP 7.3 to 8
+* `sensiolabs/security-checker` is abandoned, replaced with successor `enlightn/security-checker`
+* allowed PHP 8 in the version constraints
+* removed support for Laravel < 6.0, supported versions are now: 6.x to 8.x
+* added Spanish language files (thanks @gfmr806)
+
 ## v2.1.0 (2020-09-28)
 * dropped support for PHP 7.1, minimum version is now PHP 7.2
 * upgraded `guzzlehttp/guzzle` to a new major version (^v7.0.0)
