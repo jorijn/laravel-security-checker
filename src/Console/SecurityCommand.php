@@ -28,11 +28,13 @@ class SecurityCommand extends Command
      *
      * @param SecurityChecker $checker
      */
-    public function __construct(SecurityChecker $checker)
+    public function __construct()
     {
         parent::__construct();
 
-        $this->checker = $checker;
+        $temp_dir = config('laravel-security-checker.temp_dir', null);
+
+        $this->checker = new SecurityChecker($temp_dir);
     }
 
     /**
