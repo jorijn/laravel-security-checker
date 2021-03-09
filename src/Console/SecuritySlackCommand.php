@@ -30,13 +30,11 @@ class SecuritySlackCommand extends Command
      *
      * @param SecurityChecker $checker
      */
-    public function __construct()
+    public function __construct(SecurityChecker $checker)
     {
         parent::__construct();
 
-        $temp_dir = config('laravel-security-checker.temp_dir', null);
-
-        $this->checker = new SecurityChecker($temp_dir);
+        $this->checker = $checker;
     }
 
     /**
