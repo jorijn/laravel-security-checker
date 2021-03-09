@@ -5,6 +5,7 @@ namespace Jorijn\LaravelSecurityChecker;
 use Jorijn\LaravelSecurityChecker\Console\SecurityCommand;
 use Jorijn\LaravelSecurityChecker\Console\SecurityMailCommand;
 use Jorijn\LaravelSecurityChecker\Console\SecuritySlackCommand;
+use Enlightn\SecurityChecker\SecurityChecker;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
@@ -24,6 +25,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $configPath = __DIR__.'/../config/laravel-security-checker.php';
         $this->mergeConfigFrom($configPath, 'laravel-security-checker');
+ 
+        $this->app->bind(SecurityChecker::class, function() {
+            $temp_dir = config('laravel-security-checker.temp_dir', null);
+            return new SecurityChecker($temp_dir);
+        });
     }
 
     /**
