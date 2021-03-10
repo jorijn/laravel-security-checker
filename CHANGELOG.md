@@ -1,5 +1,9 @@
 # Changelog for Laravel Security Checker
 
+## v2.2.1 (2021-03-10)
+FIXED
+* a permission failure when using this package with multiple users on the same server by adding `temp-dir` to available config options (thanks @thomasderoo4!)
+
 ## v2.2.0 (2021-02-03)
 A big thank you to @paras-malhotra and Enlightn for helping out this release.
 
