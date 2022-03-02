@@ -11,7 +11,7 @@ class SecurityMailCommandTest extends TestCase
     /**
      * Tests if the email will be sent
      */
-    public function testFireMethod()
+    public function testFireMethod(): void
     {
         Mail::fake();
 
@@ -31,7 +31,7 @@ class SecurityMailCommandTest extends TestCase
     /**
      * Tests if the email will cancel if there are no recipients
      */
-    public function testFireMethodWithoutRecipients()
+    public function testFireMethodWithoutRecipients(): void
     {
         Mail::fake();
 
@@ -49,7 +49,7 @@ class SecurityMailCommandTest extends TestCase
     /**
      * Tests if the email will cancel if there are no vulnerabilities
      */
-    public function testFireMethodWithoutVulnerabilities()
+    public function testFireMethodWithoutVulnerabilities(): void
     {
         Mail::fake();
 
@@ -68,7 +68,7 @@ class SecurityMailCommandTest extends TestCase
     /**
      * Tests if the email will cancel if there are no vulnerabilities
      */
-    public function testFireMethodWithoutVulnerabilitiesWithSending()
+    public function testFireMethodWithoutVulnerabilitiesWithSending(): void
     {
         Mail::fake();
 

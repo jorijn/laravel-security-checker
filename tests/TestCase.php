@@ -11,24 +11,24 @@ class TestCase extends \Orchestra\Testbench\TestCase
      * @param \Illuminate\Foundation\Application $app
      * @return array
      */
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [ServiceProvider::class];
     }
 
-    protected function bindPassingSecurityChecker()
+    protected function bindPassingSecurityChecker(): void
     {
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn([]);
+        $securityCheckerMock->allows('check')->andReturns([]);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
     }
 
-    protected function bindFailingSecurityChecker()
+    protected function bindFailingSecurityChecker(): void
     {
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->shouldReceive('check')->andReturn($this->getFakeVulnerabilityReport());
+        $securityCheckerMock->allows('check')->andReturns($this->getFakeVulnerabilityReport());
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
@@ -39,7 +39,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
      *
      * @return array
      */
-    public function getFakeVulnerabilityReport()
+    public function getFakeVulnerabilityReport(): array
     {
         return [
             'bugsnag/bugsnag-laravel' => [
