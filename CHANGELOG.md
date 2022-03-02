@@ -1,5 +1,9 @@
 # Changelog for Laravel Security Checker
 
+## v2.3.0 (2022-03-02)
+* add support for Laravel 9, PHP 8.1
+* dropped support for PHP 7.3, minimum version is now 7.4
+
 ## v2.2.1 (2021-03-10)
 FIXED
 * a permission failure when using this package with multiple users on the same server by adding `temp-dir` to available config options (thanks @thomasderoo4!)
