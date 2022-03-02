@@ -10,7 +10,7 @@ class SecurityMailTest extends TestCase
     /**
      * This method tests if the Mailable class gets rendered correctly.
      */
-    public function testLaravelMailable()
+    public function testLaravelMailable(): void
     {
         // create the mailable
         $vulnerabilities = $this->getFakeVulnerabilityReport();

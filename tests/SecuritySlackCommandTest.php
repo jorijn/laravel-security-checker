@@ -17,7 +17,7 @@ class SecuritySlackCommandTest extends TestCase
     /**
      * Tests if the notification get's sent
      */
-    public function testHandleMethod()
+    public function testHandleMethod(): void
     {
         Notification::fake();
 
@@ -44,7 +44,7 @@ class SecuritySlackCommandTest extends TestCase
     /**
      * Tests that no notification is sent if a Slack Webhook has not been configured.
      */
-    public function testHandleMethodWithoutSlackWebHook()
+    public function testHandleMethodWithoutSlackWebHook(): void
     {
         Notification::fake();
 
@@ -67,7 +67,7 @@ class SecuritySlackCommandTest extends TestCase
     /**
      * Test that no notification get's sent if there are no vulnerabilities
      */
-    public function testHandleMethodWithoutVulnerabilities()
+    public function testHandleMethodWithoutVulnerabilities(): void
     {
         Notification::fake();
 
