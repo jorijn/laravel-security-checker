@@ -14,6 +14,8 @@ jobs:
         laravel: [6.*, 7.*, 8.*, 9.*, 10.*]
         exclude:
           # excludes unsupported combinations
+          - php: 8.0
+            laravel: 10.*
           - php: 7.4
             laravel: 10.*
           - php: 7.4
