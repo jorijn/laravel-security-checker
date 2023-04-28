@@ -1,5 +1,8 @@
 # Changelog for Laravel Security Checker
 
+## v2.4.0 (2023-04-28)
+* add support for Laravel 10, PHP 8.2
+
 ## v2.3.0 (2022-03-02)
 * add support for Laravel 9, PHP 8.1
 * dropped support for PHP 7.3, minimum version is now 7.4
