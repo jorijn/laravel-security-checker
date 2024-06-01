@@ -54,4 +54,4 @@ jobs:
           composer update --prefer-dist --no-interaction --no-progress
 
       - name: Execute tests
-        run: vendor/bin/phpunit --verbose --configuration=phpunit.xml.dist
+        run: vendor/bin/phpunit --configuration=phpunit.xml.dist
