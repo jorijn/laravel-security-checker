@@ -46,7 +46,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, json
-          coverage: none
+          coverage: pcov
 
       - name: Install dependencies
         run: |
