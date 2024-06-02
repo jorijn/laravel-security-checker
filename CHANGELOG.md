@@ -1,5 +1,8 @@
 # Changelog for Laravel Security Checker
 
+## v2.5.0 (2024-06-02)
+* add support for Laravel 11, PHP 8.3
+
 ## v2.4.0 (2023-04-28)
 * add support for Laravel 10, PHP 8.2
 
