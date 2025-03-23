@@ -11,10 +11,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [7.4, 8.0, 8.1, 8.2, 8.3]
-        laravel: ['6.*', '7.*', '8.*', '9.*', '10.*', '11.*']
+        php: [7.4, 8.0, 8.1, 8.2, 8.3, 8.4]
+        laravel: ['6.*', '7.*', '8.*', '9.*', '10.*', '11.*', '12.*']
         exclude:
           - php: 7.4
+            laravel: 12.*
+          - php: 8.0
+            laravel: 12.*
+          - php: 8.1
+            laravel: 12.*
+          - php: 7.4
             laravel: 11.*
           - php: 8.0
             laravel: 11.*
@@ -24,13 +30,19 @@ jobs:
             laravel: 10.*
           - php: 8.0
             laravel: 10.*
+          - php: 8.4
+            laravel: 10.*
           - php: 7.4
             laravel: 9.*
           - php: 8.3
             laravel: 9.*
+          - php: 8.4
+            laravel: 9.*
           - php: 8.2
             laravel: 8.*
           - php: 8.3
+            laravel: 8.*
+          - php: 8.4
             laravel: 8.*
           - php: 8.1
             laravel: 7.*
@@ -38,11 +50,15 @@ jobs:
             laravel: 7.*
           - php: 8.3
             laravel: 7.*
+          - php: 8.4
+            laravel: 7.*
           - php: 8.1
             laravel: 6.*
           - php: 8.2
             laravel: 6.*
           - php: 8.3
+            laravel: 6.*
+          - php: 8.4
             laravel: 6.*
 
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
@@ -60,17 +76,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "illuminate/contracts=${{ matrix.laravel }}" --no-update
+          composer require "illuminate/contracts=${{ matrix.laravel }}" --prefer-stable --no-update
           composer update --prefer-dist --no-interaction --no-progress
 
-      - name: Grab PHPUnit version
+      - name: Grab PHPUnit major version
         id: phpunit_version
-        run: echo "VERSION=$(vendor/bin/phpunit --version | grep --only-matching --max-count=1 --extended-regexp '\b[0-9]+\.[0-9]+')" >> $GITHUB_OUTPUT
+        run: echo "MAJOR_VERSION=$(vendor/bin/phpunit --version | grep --only-matching --max-count=1 --extended-regexp '\b[0-9]+\.[0-9]+' | cut -d '.' -f 1)" >> $GITHUB_OUTPUT
 
-      - name: Execute tests (PHPUnit 10)
-        if: ${{ startsWith(steps.phpunit_version.outputs.VERSION, '10.') }}
+      - name: Execute tests (PHPUnit >= 10)
+        if: "${{ fromJSON(steps.phpunit_version.outputs.MAJOR_VERSION) >= 10 }}"
         run: vendor/bin/phpunit --configuration=phpunit10.xml.dist
 
       - name: Execute tests (PHPUnit < 10)
-        if: ${{ !startsWith(steps.phpunit_version.outputs.VERSION, '10.') }}
+        if: "${{ fromJSON(steps.phpunit_version.outputs.MAJOR_VERSION) < 10 }}"
         run: vendor/bin/phpunit --configuration=phpunit.xml.dist
