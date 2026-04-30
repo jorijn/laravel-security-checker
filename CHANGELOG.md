@@ -1,5 +1,13 @@
 # Changelog for Laravel Security Checker
 
+## v3.0.0 (2026-04-30)
+* added support for PHP 8.5 and Laravel 13 (thanks @DevDavido!)
+* **BREAKING:** dropped support for unsupported dependencies, including Laravel 11 and below; minimum supported version is now Laravel 12 — see https://laravel.com/docs/13.x/releases#support-policy
+* simplified the test workflow following the dependency cleanup
+
+## v2.6.0 (2025-03-23)
+* added support for PHP 8.4 and Laravel 12 (thanks @DevDavido!)
+
 ## v2.5.0 (2024-06-02)
 * add support for Laravel 11, PHP 8.3
 
