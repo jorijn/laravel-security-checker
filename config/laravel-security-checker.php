@@ -57,7 +57,7 @@ return [
      | Laravel Security Checker — Exclude dev dependencies
      |--------------------------------------------------------------------------
      |
-     | Determines if the package should check for vulnerabilities in dev dependencies.
+     | Exclude dev dependencies from the vulnerabilities scanning.
      |
      */
     'exclude_dev' => env('LCS_EXCLUDE_DEV', false),
