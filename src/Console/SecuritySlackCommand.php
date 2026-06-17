@@ -53,7 +53,11 @@ class SecuritySlackCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $vulnerabilities = $this->checker->check($composerLock);
+        $vulnerabilities = $this->checker->check(
+            $composerLock,
+            config('laravel-security-checker.exclude_dev', false),
+            config('laravel-security-checker.allow_list', [])
+        );
 
         // cancel execution here if user does not want to be notified when there are 0 vulns.
         $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);

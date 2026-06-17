@@ -19,7 +19,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function bindPassingSecurityChecker(): void
     {
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->allows('check')->andReturns([]);
+        $securityCheckerMock->allows('check')
+            ->with(
+                base_path('composer.lock'),
+                config('laravel-security-checker.exclude_dev', false),
+                config('laravel-security-checker.allow_list', [])
+            )
+            ->andReturns([]);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
@@ -28,7 +34,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function bindFailingSecurityChecker(): void
     {
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
-        $securityCheckerMock->allows('check')->andReturns($this->getFakeVulnerabilityReport());
+        $securityCheckerMock->allows('check')
+            ->with(
+                base_path('composer.lock'),
+                config('laravel-security-checker.exclude_dev', false),
+                config('laravel-security-checker.allow_list', [])
+            )
+            ->andReturns($this->getFakeVulnerabilityReport());
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);

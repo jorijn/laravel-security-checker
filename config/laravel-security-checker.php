@@ -41,7 +41,7 @@ return [
      | Laravel Security Checker — Temp dir
      |--------------------------------------------------------------------------
      |
-     | Decides where enlightn/security-checker will place its temp files. 
+     | Decides where enlightn/security-checker will place its temp files.
      | Useful when using this package with multiple users/permissions on a single server.
      | See: https://github.com/enlightn/security-checker/issues/17
      |      https://github.com/Jorijn/laravel-security-checker/issues/35
@@ -50,5 +50,27 @@ return [
      |   null = default /tmp directory
      |
      */
-    'temp_dir' => null
+    'temp_dir' => null,
+
+    /*
+     |--------------------------------------------------------------------------
+     | Laravel Security Checker — Exclude dev dependencies
+     |--------------------------------------------------------------------------
+     |
+     | Determines if the package should check for vulnerabilities in dev dependencies.
+     |
+     */
+    'exclude_dev' => env('LCS_EXCLUDE_DEV', false),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Laravel Security Checker — Allow list
+     |--------------------------------------------------------------------------
+     |
+     | A list of vulnerabilities to allow, identified by the CVE identifier, or the CVE title.
+     |
+     | LCS_ALLOW_LIST=["CVE-2024-1234","Example vulnerability title"]
+     |
+     */
+    'allow_list' => json_decode(env('LCS_ALLOW_LIST', '[]')),
 ];
