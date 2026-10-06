@@ -16,30 +16,30 @@ class TestCase extends \Orchestra\Testbench\TestCase
         return [ServiceProvider::class];
     }
 
-    protected function bindPassingSecurityChecker(): void
+    /**
+     * The expected options are explicit (rather than read from config) so tests prove the
+     * commands normalize the config before handing it to the checker.
+     */
+    protected function bindPassingSecurityChecker(bool $excludeDev = false, array $allowList = []): void
     {
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
         $securityCheckerMock->allows('check')
-            ->with(
-                base_path('composer.lock'),
-                config('laravel-security-checker.exclude_dev', false),
-                config('laravel-security-checker.allow_list', [])
-            )
+            ->with(base_path('composer.lock'), $excludeDev, $allowList)
             ->andReturns([]);
 
         // bind Mockery instance to the app container
         $this->app->instance(SecurityChecker::class, $securityCheckerMock);
     }
 
-    protected function bindFailingSecurityChecker(): void
+    /**
+     * The expected options are explicit (rather than read from config) so tests prove the
+     * commands normalize the config before handing it to the checker.
+     */
+    protected function bindFailingSecurityChecker(bool $excludeDev = false, array $allowList = []): void
     {
         $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
         $securityCheckerMock->allows('check')
-            ->with(
-                base_path('composer.lock'),
-                config('laravel-security-checker.exclude_dev', false),
-                config('laravel-security-checker.allow_list', [])
-            )
+            ->with(base_path('composer.lock'), $excludeDev, $allowList)
             ->andReturns($this->getFakeVulnerabilityReport());
 
         // bind Mockery instance to the app container

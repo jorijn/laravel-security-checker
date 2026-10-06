@@ -1,5 +1,9 @@
 # Changelog for Laravel Security Checker
 
+## v3.1.0 (2026-10-06)
+* added `exclude_dev` (`LCS_EXCLUDE_DEV`) to leave dev dependencies out of the check (thanks @gavg-vaioni!)
+* added `allow_list` (`LCS_ALLOW_LIST`) to stop known vulnerabilities from being reported, by CVE identifier or advisory title (thanks @gavg-vaioni!)
+
 ## v3.0.0 (2026-04-30)
 * added support for PHP 8.5 and Laravel 13 (thanks @DevDavido!)
 * **BREAKING:** dropped support for unsupported dependencies, including Laravel 11 and below; minimum supported version is now Laravel 12 — see https://laravel.com/docs/13.x/releases#support-policy

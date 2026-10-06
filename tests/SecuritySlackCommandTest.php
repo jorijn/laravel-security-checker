@@ -98,7 +98,7 @@ class SecuritySlackCommandTest extends TestCase
         Config::set('laravel-security-checker.exclude_dev', true);
         Config::set('laravel-security-checker.allow_list', ['CVE-2024-1234', 'Example vulnerability title']);
 
-        $this->bindPassingSecurityChecker();
+        $this->bindPassingSecurityChecker(true, ['CVE-2024-1234', 'Example vulnerability title']);
 
         // set the recipient for testing
         Config::set(
