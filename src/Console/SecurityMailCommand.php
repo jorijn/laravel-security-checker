@@ -6,10 +6,13 @@ use Enlightn\SecurityChecker\SecurityChecker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Jorijn\LaravelSecurityChecker\Console\Concerns\ChecksForVulnerabilities;
 use Jorijn\LaravelSecurityChecker\Mailables\SecurityMail;
 
 class SecurityMailCommand extends Command
 {
+    use ChecksForVulnerabilities;
+
     /**
      * @var string
      */
@@ -47,7 +50,7 @@ class SecurityMailCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $checkResult = $this->checker->check($composerLock);
+        $checkResult = $this->checkForVulnerabilities($composerLock);
 
         // if the user didn't want any email if there are no results,
         // cancel execution here.

@@ -4,10 +4,13 @@ namespace Jorijn\LaravelSecurityChecker\Console;
 
 use Enlightn\SecurityChecker\SecurityChecker;
 use Illuminate\Console\Command;
+use Jorijn\LaravelSecurityChecker\Console\Concerns\ChecksForVulnerabilities;
 use Jorijn\LaravelSecurityChecker\Formatter\SimpleFormatter;
 
 class SecurityCommand extends Command
 {
+    use ChecksForVulnerabilities;
+
     /**
      * @var string
      */
@@ -44,7 +47,7 @@ class SecurityCommand extends Command
         $composerLock = base_path('composer.lock');
 
         // and feed it into the SecurityChecker
-        $checkResult = $this->checker->check($composerLock);
+        $checkResult = $this->checkForVulnerabilities($composerLock);
 
         // then display it using the formatter provided
         app(SimpleFormatter::class)->displayResults($this->getOutput(), $composerLock, $checkResult);

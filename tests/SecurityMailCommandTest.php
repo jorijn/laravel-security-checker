@@ -29,6 +29,19 @@ class SecurityMailCommandTest extends TestCase
     }
 
     /**
+     * Tests if the configured checker options are passed to the security checker
+     */
+    public function testFireMethodPassesConfiguredCheckerOptions(): void
+    {
+        Config::set('laravel-security-checker.exclude_dev', true);
+        Config::set('laravel-security-checker.allow_list', ['CVE-2024-1234', 'Example vulnerability title']);
+
+        $this->bindPassingSecurityChecker(true, ['CVE-2024-1234', 'Example vulnerability title']);
+
+        $this->artisan('security-check:email')->assertExitCode(0);
+    }
+
+    /**
      * Tests if the email will cancel if there are no recipients
      */
     public function testFireMethodWithoutRecipients(): void

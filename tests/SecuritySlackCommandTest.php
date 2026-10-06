@@ -87,4 +87,25 @@ class SecuritySlackCommandTest extends TestCase
             SecuritySlackNotification::class
         );
     }
+
+    /**
+     * Tests if the configured checker options are passed to the security checker
+     */
+    public function testFireMethodPassesConfiguredCheckerOptions(): void
+    {
+        Notification::fake();
+
+        Config::set('laravel-security-checker.exclude_dev', true);
+        Config::set('laravel-security-checker.allow_list', ['CVE-2024-1234', 'Example vulnerability title']);
+
+        $this->bindPassingSecurityChecker(true, ['CVE-2024-1234', 'Example vulnerability title']);
+
+        // set the recipient for testing
+        Config::set(
+            'laravel-security-checker.slack_webhook_url',
+            'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
+        );
+
+        $this->artisan('security-check:slack')->assertExitCode(0);
+    }
 }

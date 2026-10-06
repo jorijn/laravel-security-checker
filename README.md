@@ -58,6 +58,28 @@ E.g.:
 LCS_SLACK_WEBHOOK=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
+#### Excluding dev dependencies
+If your dev dependencies never reach production, you can leave them out of the check by adding the following entry to your `.env` file.
+
+```
+LCS_EXCLUDE_DEV=true
+```
+
+#### Allowing known vulnerabilities
+Sometimes a reported vulnerability doesn't affect you, or you've accepted the risk. You can stop it from being reported by
+adding its CVE identifier or its exact advisory title to the allow list. In your `.env` file, use a **single-quoted** JSON array:
+
+```
+LCS_ALLOW_LIST='["CVE-2024-1234","Example vulnerability title"]'
+```
+
+If you have published the configuration file, you can use a regular PHP array for `allow_list` instead.
+
+Keep in mind:
+* Entries must match exactly, including case.
+* An allowed title is ignored for every package with an advisory by that name.
+* An invalid allow list is ignored and logged as a warning, so the check always runs and nothing is hidden by mistake.
+
 ### Scheduling
 The package exposes a new command for you:
 
