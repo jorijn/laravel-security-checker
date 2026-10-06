@@ -44,7 +44,11 @@ class SecurityCommand extends Command
         $composerLock = base_path('composer.lock');
 
         // and feed it into the SecurityChecker
-        $checkResult = $this->checker->check($composerLock);
+        $checkResult = $this->checker->check(
+            $composerLock,
+            config('laravel-security-checker.exclude_dev', false),
+            config('laravel-security-checker.allow_list', [])
+        );
 
         // then display it using the formatter provided
         app(SimpleFormatter::class)->displayResults($this->getOutput(), $composerLock, $checkResult);

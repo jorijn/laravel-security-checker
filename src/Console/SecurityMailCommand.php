@@ -47,7 +47,11 @@ class SecurityMailCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $checkResult = $this->checker->check($composerLock);
+        $checkResult = $this->checker->check(
+            $composerLock,
+            config('laravel-security-checker.exclude_dev', false),
+            config('laravel-security-checker.allow_list', [])
+        );
 
         // if the user didn't want any email if there are no results,
         // cancel execution here.
