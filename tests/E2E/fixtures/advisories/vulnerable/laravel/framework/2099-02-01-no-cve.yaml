@@ -1,0 +1,9 @@
+# Many real advisories have no CVE; reports must still list them.
+title:     'E2E fixture: framework advisory without a CVE'
+link:      https://example.com/advisories/no-cve
+cve:       ~
+branches:
+    master:
+        time:     ~
+        versions: ['<99.0.0']
+reference: composer://laravel/framework

@@ -1,0 +1,62 @@
+name: nightly real source
+
+# The regular test suites only ever see offline fixtures, so they cannot notice when the
+# real advisory sources change or break. This workflow does, every night:
+#
+#  1. a fresh Laravel app runs security-check:now against the live FriendsOfPHP archive
+#     (the source 3.x uses), and
+#  2. the full Packagist advisory feed is compared with per-package querying (the source
+#     4.0 will use), so the privacy-friendly default can never silently report less.
+#
+# A failing scheduled run notifies the maintainer through GitHub's usual workflow emails.
+# Note: GitHub pauses scheduled workflows after 60 days without repository activity.
+
+on:
+  schedule:
+    - cron: '43 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-source:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: dom, curl, libxml, mbstring, zip, json
+          coverage: none
+
+      - name: Create Laravel 13 app with this package
+        run: tests/E2E/bin/create-app.sh 13 "$RUNNER_TEMP/app"
+
+      - name: Run security-check:now against the live advisory database
+        working-directory: ${{ runner.temp }}/app
+        run: |
+          # Exit code 1 means "vulnerabilities found" but is also what an uncaught exception
+          # (source down, archive format changed) returns. So judge by the report header,
+          # which is only printed once the advisories were fetched and parsed.
+          set +e
+          php artisan security-check:now --no-ansi | tee "$RUNNER_TEMP/report.txt"
+          status=${PIPESTATUS[0]}
+          set -e
+
+          if ! grep -q '^Security Check Report: ' "$RUNNER_TEMP/report.txt"; then
+            echo "::error::security-check:now did not produce a report (exit code $status)"
+            exit 1
+          fi
+
+          if [ "$status" -gt 1 ]; then
+            echo "::error::security-check:now exited with unexpected code $status"
+            exit 1
+          fi
+
+      - name: Compare the full Packagist feed with per-package querying
+        run: php tests/E2E/bin/compare-packagist-feeds.php "$RUNNER_TEMP/app/composer.lock"

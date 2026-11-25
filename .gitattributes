@@ -1,0 +1,12 @@
+# Keep development-only files out of the archives Composer downloads (--prefer-dist).
+# Users get a smaller vendor/ directory; nothing under src/, config/ or resources/ changes.
+/.github            export-ignore
+/tests              export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/phpunit.xml.dist   export-ignore
+/phpunit.e2e.xml.dist export-ignore
+/CHANGELOG.md       export-ignore
+
+# Consistent line endings, so Blade views and PHP files never pick up CRLF on Windows checkouts.
+* text=auto eol=lf
