@@ -1,5 +1,15 @@
 # Changelog for Laravel Security Checker
 
+## [3.1.1](https://github.com/jorijn/laravel-security-checker/compare/v3.1.0...v3.1.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* accept 1, yes and on for LCS_NOTIFY_WITHOUT_VULNERABILITIES ([6eabf12](https://github.com/jorijn/laravel-security-checker/commit/6eabf12db4e07ff9605c4e42af19a0b49eca8779))
+* publish translations to the app's own lang directory instead of resources/lang ([6eabf12](https://github.com/jorijn/laravel-security-checker/commit/6eabf12db4e07ff9605c4e42af19a0b49eca8779))
+* show the CVE identifier in the mail report instead of "1" ([6eabf12](https://github.com/jorijn/laravel-security-checker/commit/6eabf12db4e07ff9605c4e42af19a0b49eca8779))
+* support several comma-separated addresses in LCS_MAIL_TO ([6eabf12](https://github.com/jorijn/laravel-security-checker/commit/6eabf12db4e07ff9605c4e42af19a0b49eca8779))
+
 ## v3.1.0 (2026-10-06)
 * added `exclude_dev` (`LCS_EXCLUDE_DEV`) to leave dev dependencies out of the check (thanks @gavg-vaioni!)
 * added `allow_list` (`LCS_ALLOW_LIST`) to stop known vulnerabilities from being reported, by CVE identifier or advisory title (thanks @gavg-vaioni!)
