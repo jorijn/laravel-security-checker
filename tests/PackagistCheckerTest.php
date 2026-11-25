@@ -118,6 +118,48 @@ class PackagistCheckerTest extends TestCase
         $this->assertSame(['PKSA-0003'], array_keys($report['laravel/framework']['advisories']));
     }
 
+    public function testTheCheckerTellsWhichAdvisoriesTheAllowListIgnored(): void
+    {
+        Http::fake(['packagist.org/*' => Http::response($this->feed())]);
+        $checker = $this->checker();
+
+        // GHSA-0001 is written first, so that is the entry shown, although the CVE matches too.
+        $checker->check(self::LOCK, false, ['GHSA-0001', 'CVE-2099-0001', 'CVE-2099-0004', 'never-matches']);
+
+        $this->assertSame([
+            'laravel/framework' => [
+                'version' => '10.0.0',
+                'time' => '2023-02-14T14:38:27+00:00',
+                'advisories' => [
+                    'PKSA-0001' => [
+                        'title' => 'Framework advisory with a CVE',
+                        'link' => 'https://github.com/advisories/GHSA-0001',
+                        'cve' => 'CVE-2099-0001',
+                        'severity' => 'high',
+                        'allowed_by' => 'GHSA-0001',
+                    ],
+                ],
+            ],
+            'symfony/http-kernel' => [
+                'version' => '6.4.20',
+                'time' => null,
+                'advisories' => [
+                    'PKSA-0004' => [
+                        'title' => 'Kernel advisory',
+                        'link' => 'https://example.com/4',
+                        'cve' => 'CVE-2099-0004',
+                        'severity' => 'critical',
+                        'allowed_by' => 'CVE-2099-0004',
+                    ],
+                ],
+            ],
+        ], $checker->ignoredAdvisories());
+
+        // Every check starts over.
+        $checker->check(self::LOCK);
+        $this->assertSame([], $checker->ignoredAdvisories());
+    }
+
     public function testAllowListMatchesExactlyAndCaseSensitively(): void
     {
         Http::fake(['packagist.org/*' => Http::response($this->feed())]);

@@ -8,6 +8,7 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\VersionParser;
 use Jorijn\LaravelSecurityChecker\Contracts\AdvisorySource;
 use Jorijn\LaravelSecurityChecker\Contracts\Checker;
+use Jorijn\LaravelSecurityChecker\Contracts\ReportsIgnoredAdvisories;
 use Jorijn\LaravelSecurityChecker\LockFile;
 use Jorijn\LaravelSecurityChecker\Severity;
 use UnexpectedValueException;
@@ -18,7 +19,7 @@ use UnexpectedValueException;
  * The matching follows `composer audit` (composer/composer's PartialSecurityAdvisory and
  * Auditor), so both tools report the same vulnerabilities for the same lock file.
  */
-class PackagistChecker implements Checker
+class PackagistChecker implements Checker, ReportsIgnoredAdvisories
 {
     private readonly VersionParser $versionParser;
 
@@ -27,6 +28,13 @@ class PackagistChecker implements Checker
      */
     private array $constraints = [];
 
+    /**
+     * What the last check() left out because of the allow list, see ignoredAdvisories().
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    private array $ignored = [];
+
     public function __construct(private readonly AdvisorySource $source)
     {
         $this->versionParser = new VersionParser();
@@ -34,6 +42,7 @@ class PackagistChecker implements Checker
 
     public function check(string $composerLock, bool $excludeDev = false, array $allowList = []): array
     {
+        $this->ignored = [];
         $lockFile = LockFile::read($composerLock);
         $installed = $lockFile->packages($excludeDev);
 
@@ -45,40 +54,68 @@ class PackagistChecker implements Checker
         $report = [];
 
         foreach ($installed as $package => $version) {
-            $reported = [];
+            $reported = $ignored = [];
 
             foreach ($advisories[$package] ?? [] as $advisory) {
-                if (!$this->affects($advisory, $version) || $this->isAllowed($advisory, $allowList)) {
+                if (!$this->affects($advisory, $version)) {
                     continue;
                 }
 
-                $id = $this->string($advisory['advisoryId'] ?? null) ?? $package.'#'.count($reported);
-
-                $reported[$id] = [
+                $id = $this->string($advisory['advisoryId'] ?? null)
+                    ?? $package.'#'.(count($reported) + count($ignored));
+                $details = [
                     'title' => $this->string($advisory['title'] ?? null) ?? $id,
                     'link' => $this->string($advisory['link'] ?? null) ?? '',
                     'cve' => $this->string($advisory['cve'] ?? null),
                     'severity' => Severity::normalize($advisory['severity'] ?? null),
                 ];
+
+                $allowedBy = $this->allowedBy($advisory, $allowList);
+
+                if ($allowedBy === null) {
+                    $reported[$id] = $details;
+                } else {
+                    $ignored[$id] = $details + ['allowed_by' => $allowedBy];
+                }
             }
 
             if ($reported !== []) {
-                // Both Packagist endpoints list advisories in their own order; sorting makes the
-                // report identical whichever driver produced it.
-                ksort($reported);
-                $report[$package] = [
-                    // The same values the Enlightn driver reported in 3.x, for published views.
-                    'version' => ltrim($version, 'v'),
-                    'time' => $lockFile->time($package),
-                    'advisories' => $reported,
-                ];
+                $report[$package] = $this->package($reported, $version, $lockFile->time($package));
+            }
+
+            if ($ignored !== []) {
+                $this->ignored[$package] = $this->package($ignored, $version, $lockFile->time($package));
             }
         }
 
         // A stable order keeps reports (and mails) comparable from one run to the next.
         ksort($report);
+        ksort($this->ignored);
 
         return $report;
+    }
+
+    public function ignoredAdvisories(): array
+    {
+        return $this->ignored;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $advisories
+     * @return array<string, mixed>
+     */
+    private function package(array $advisories, string $version, ?string $time): array
+    {
+        // Both Packagist endpoints list advisories in their own order; sorting makes the
+        // report identical whichever driver produced it.
+        ksort($advisories);
+
+        return [
+            // The same values the Enlightn driver reported in 3.x, for published views.
+            'version' => ltrim($version, 'v'),
+            'time' => $time,
+            'advisories' => $advisories,
+        ];
     }
 
     /**
@@ -124,11 +161,12 @@ class PackagistChecker implements Checker
      *
      * @param array<string, mixed> $advisory
      * @param array<int, string> $allowList
+     * @return ?string The allow list entry that matched, or null when the advisory is not allowed
      */
-    private function isAllowed(array $advisory, array $allowList): bool
+    private function allowedBy(array $advisory, array $allowList): ?string
     {
         if ($allowList === []) {
-            return false;
+            return null;
         }
 
         $identifiers = [
@@ -144,7 +182,14 @@ class PackagistChecker implements Checker
 
         $identifiers = array_filter($identifiers, fn ($identifier) => is_string($identifier) && $identifier !== '');
 
-        return array_intersect($identifiers, $allowList) !== [];
+        // In allow list order, so the entry shown is the first one the user wrote that matches.
+        foreach ($allowList as $entry) {
+            if (in_array($entry, $identifiers, true)) {
+                return $entry;
+            }
+        }
+
+        return null;
     }
 
     private function string(mixed $value): ?string

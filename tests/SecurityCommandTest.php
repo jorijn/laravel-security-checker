@@ -52,6 +52,8 @@ class SecurityCommandTest extends TestCase
             'vulnerable_package_count' => 1,
             'advisory_count' => 1,
             'packages' => $this->getFakeVulnerabilityReport(),
+            // The mocked checker cannot tell what the allow list ignored.
+            'ignored' => [],
         ], json_decode($json, true, flags: JSON_THROW_ON_ERROR));
     }
 

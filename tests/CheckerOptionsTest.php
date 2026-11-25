@@ -33,6 +33,17 @@ class CheckerOptionsTest extends TestCase
             'null' => [null, []],
             // Enlightn compares strictly, so clean up entries that could never match
             'entries are trimmed and non-strings dropped' => [[' CVE-2024-1234 ', '', 42, null, ['nested']], ['CVE-2024-1234']],
+            // since 4.1: an entry can carry the reason it is allowed
+            'entries with a reason' => [
+                [['id' => 'GHSA-xxxx-yyyy-zzzz', 'reason' => 'We do not use the affected feature'], 'CVE-2024-1234'],
+                ['GHSA-xxxx-yyyy-zzzz', 'CVE-2024-1234'],
+            ],
+            'entries with a reason from .env' => [
+                '[{"id":"GHSA-xxxx-yyyy-zzzz","reason":"Not reachable"},"CVE-2024-1234"]',
+                ['GHSA-xxxx-yyyy-zzzz', 'CVE-2024-1234'],
+            ],
+            'entry without an id is dropped' => [[['reason' => 'forgot the id'], ['id' => ' ']], []],
+            'duplicates count once' => [['CVE-2024-1234', ['id' => 'CVE-2024-1234', 'reason' => 'x']], ['CVE-2024-1234']],
         ];
     }
 

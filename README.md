@@ -124,6 +124,23 @@ LCS_ALLOW_LIST='["CVE-2024-1234","GHSA-xxxx-xxxx-xxxx","Example vulnerability ti
 
 If you have published the configuration file, you can use a regular PHP array for `allow_list` instead.
 
+To remember (and tell your colleagues) why an advisory is allowed, write the entry as an object with an `id` and a `reason`.
+Both forms can be mixed:
+
+```
+LCS_ALLOW_LIST='[{"id":"GHSA-xxxx-xxxx-xxxx","reason":"We never call the affected method"},"CVE-2024-1234"]'
+```
+
+```php
+'allow_list' => [
+    ['id' => 'GHSA-xxxx-xxxx-xxxx', 'reason' => 'We never call the affected method'],
+    'CVE-2024-1234',
+],
+```
+
+`security-check:now` lists the advisories the allow list hides, with their reason, so an accepted risk does not disappear
+from sight (also in the [JSON output](#json-output), under `ignored`). This works with the Packagist drivers.
+
 Keep in mind:
 * Entries must match exactly, including case.
 * An allowed title is ignored for every package with an advisory by that name.
@@ -217,11 +234,14 @@ php artisan security-check:now --format=json > security-report.json
                 }
             }
         }
-    }
+    },
+    "ignored": {}
 }
 ```
 
-* `packages` is always an object, also when nothing was found (`{}`).
+* `packages` and `ignored` are always objects, also when they are empty (`{}`).
+* `ignored` lists the advisories hidden by the allow list, in the same shape, with `allowed_by` (the matching allow list entry)
+  and `reason` added to each advisory.
 * `severity` is `low`, `medium`, `high`, `critical`, or `null` when unknown.
 * Only the JSON document is written to stdout. Warnings and errors go to stderr.
 * When the check could not run, the document holds an `error` message instead of `packages`, and the exit code is `2`.

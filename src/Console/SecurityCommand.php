@@ -63,7 +63,7 @@ class SecurityCommand extends Command
 
         // then display it using the formatter provided
         $formatter = $this->wantsJson() ? app(JsonFormatter::class) : app(SimpleFormatter::class);
-        $formatter->displayResults($this->getOutput(), $composerLock, $checkResult);
+        $formatter->displayResults($this->getOutput(), $composerLock, $checkResult, $this->ignoredAdvisories);
 
         return count($checkResult) > 0 ? self::VULNERABILITIES_FOUND : self::SUCCESS;
     }
