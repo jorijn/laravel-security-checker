@@ -7,6 +7,9 @@
 /phpunit.xml.dist   export-ignore
 /phpunit.e2e.xml.dist export-ignore
 /CHANGELOG.md       export-ignore
+/RELEASING.md       export-ignore
+/release-please-config.json export-ignore
+/.release-please-manifest.json export-ignore
 
 # Consistent line endings, so Blade views and PHP files never pick up CRLF on Windows checkouts.
 * text=auto eol=lf

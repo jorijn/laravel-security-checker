@@ -4,9 +4,18 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    # Conventional Commit prefixes, so Dependabot PRs pass the PR title check and land in the
+    # right place: runtime constraints (require) are user-facing and trigger a patch release,
+    # dev tooling (require-dev) does not.
+    commit-message:
+      prefix: "deps"
+      prefix-development: "chore"
   # Keeps actions/checkout and shivammathur/setup-php current, so a deprecated action
   # version never silently breaks the scheduled runs.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    # CI-only change: hidden from the CHANGELOG and never triggers a release.
+    commit-message:
+      prefix: "ci"
