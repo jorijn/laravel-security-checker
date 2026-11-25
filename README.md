@@ -176,6 +176,39 @@ You can run the check yourself with `php artisan security-check:now`, for exampl
 
 <img width="784" alt="Output of php artisan security-check:now, listing three vulnerable packages with their advisories and CVE identifiers" src="https://raw.githubusercontent.com/jorijn/laravel-security-checker/master/.github/images/screenshot-console.png">
 
+### JSON output
+Add `--format=json` to get the report as JSON, for example to process it in a CI pipeline:
+
+```bash
+php artisan security-check:now --format=json > security-report.json
+```
+
+```json
+{
+    "lock_file": "/var/www/app/composer.lock",
+    "vulnerable_package_count": 1,
+    "advisory_count": 1,
+    "packages": {
+        "laravel/framework": {
+            "version": "12.0.0",
+            "time": "2025-02-24T13:40:17+00:00",
+            "advisories": {
+                "PKSA-xxxx-xxxx-xxxx": {
+                    "title": "Example vulnerability title",
+                    "link": "https://github.com/advisories/GHSA-xxxx-xxxx-xxxx",
+                    "cve": "CVE-2025-1234"
+                }
+            }
+        }
+    }
+}
+```
+
+* `packages` is always an object, also when nothing was found (`{}`).
+* Only the JSON document is written to stdout. Warnings and errors go to stderr.
+* When the check could not run, the document holds an `error` message instead of `packages`, and the exit code is `2`.
+* The exit codes are the same as for the text output.
+
 ### Exit codes
 | Exit code | Meaning |
 |---|---|
