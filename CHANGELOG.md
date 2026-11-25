@@ -1,5 +1,21 @@
 # Changelog for Laravel Security Checker
 
+## [4.1.0](https://github.com/jorijn/laravel-security-checker/compare/v4.0.0...v4.1.0) (2026-11-25)
+
+
+### Features
+
+* add --format=json to security-check:now ([#73](https://github.com/jorijn/laravel-security-checker/issues/73)) ([1ed3432](https://github.com/jorijn/laravel-security-checker/commit/1ed343278eda2e2234647893604a44cf25f4fbba))
+* add LCS_NOTIFY_ONLY_NEW to only report new findings ([#78](https://github.com/jorijn/laravel-security-checker/issues/78)) ([b03d947](https://github.com/jorijn/laravel-security-checker/commit/b03d94724c9b92653e4500ef9d7fbacf26a578be))
+* add security-check:teams and security-check:webhook ([#76](https://github.com/jorijn/laravel-security-checker/issues/76)) ([41a5145](https://github.com/jorijn/laravel-security-checker/commit/41a5145b81f0f68b108b0a5cd51b30554afa7321))
+* give allow list entries a reason and list ignored advisories ([#75](https://github.com/jorijn/laravel-security-checker/issues/75)) ([30a45bc](https://github.com/jorijn/laravel-security-checker/commit/30a45bc71b6214b565eea2447c543b2c2211eda6))
+* show advisory severity and add LCS_MINIMUM_SEVERITY ([#74](https://github.com/jorijn/laravel-security-checker/issues/74)) ([2b5d75f](https://github.com/jorijn/laravel-security-checker/commit/2b5d75fcf11c9e90b3d8bc903cd2db47e38d5db6))
+
+
+### Bug Fixes
+
+* render every package in the vulnerability mail as a heading instead of a literal "## vendor/package" line ([6d9bc31](https://github.com/jorijn/laravel-security-checker/commit/6d9bc319cd25f0b0e3e7b0e284c5ef78cd9cf1a9))
+
 ## [4.0.0](https://github.com/jorijn/laravel-security-checker/compare/v3.1.1...v4.0.0) (2026-11-25)
 
 
