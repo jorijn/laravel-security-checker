@@ -46,9 +46,10 @@ class PublishTest extends E2ETestCase
 
         $output = $this->artisan(['security-check:now'])->getOutput();
 
-        $this->assertStringNotContainsString('CVE-2099-0001', $output);
-        $this->assertStringNotContainsString('CVE-2099-0003', $output);
-        $this->assertStringContainsString('E2E fixture: framework advisory without a CVE', $output);
+        $this->assertStringNotContainsString('CVE-2099-0001', $this->reportedPart($output));
+        $this->assertStringNotContainsString('CVE-2099-0003', $this->reportedPart($output));
+        $this->assertStringContainsString('E2E fixture: framework advisory without a CVE', $this->reportedPart($output));
+        $this->assertStringContainsString('2 advisories are ignored by the allow list:', $output);
     }
 
     /**

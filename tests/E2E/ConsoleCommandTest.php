@@ -110,8 +110,10 @@ class ConsoleCommandTest extends E2ETestCase
 
         $this->assertSame(1, $process->getExitCode());
         $this->assertStringContainsString('[CRITICAL] 1 package has known vulnerabilities', $output);
-        $this->assertStringNotContainsString('laravel/framework', $output);
-        $this->assertStringContainsString('CVE-2099-0003', $output);
+        $this->assertStringNotContainsString('laravel/framework', $this->reportedPart($output));
+        $this->assertStringContainsString('CVE-2099-0003', $this->reportedPart($output));
+        // Still visible, but as ignored (since 4.1).
+        $this->assertStringContainsString('2 advisories are ignored by the allow list:', $output);
     }
 
     public function testAllowingEverythingExitsWithZero(): void
@@ -263,5 +265,33 @@ class ConsoleCommandTest extends E2ETestCase
         $this->assertSame(1, $process->getExitCode());
         $this->assertStringContainsString('minimum_severity "severe" is invalid and has been ignored', $process->getOutput());
         $this->assertStringContainsString('[CRITICAL] 2 packages have known vulnerabilities', $process->getOutput());
+    }
+
+    public function testAllowListEntriesWithAReasonAreListedAsIgnored(): void
+    {
+        $process = $this->artisan(['security-check:now'], [
+            'LCS_ALLOW_LIST' => json_encode([
+                ['id' => 'PKSA-e2e-CVE-2099-0001', 'reason' => 'Only reachable from the admin panel'],
+                'E2E fixture: framework advisory without a CVE',
+            ]),
+        ]);
+        $output = $process->getOutput();
+
+        $this->assertSame(1, $process->getExitCode(), $process->getErrorOutput());
+        $this->assertStringContainsString('[CRITICAL] 1 package has known vulnerabilities', $output);
+        $this->assertStringContainsString('2 advisories are ignored by the allow list:', $output);
+        $this->assertMatchesRegularExpression(
+            '/^ \* laravel\/framework \(\d+\.\d+\.\d+\): CVE-2099-0001: E2E fixture: framework advisory with a CVE\n +Reason: Only reachable from the admin panel$/m',
+            $output
+        );
+        $this->assertStringContainsString('Allowed by "E2E fixture: framework advisory without a CVE", no reason given', $output);
+
+        $json = json_decode($this->artisan(['security-check:now', '--format=json'], [
+            'LCS_ALLOW_LIST' => json_encode([['id' => 'CVE-2099-0003', 'reason' => 'dev only']]),
+        ])->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertArrayNotHasKey('phpunit/phpunit', $json['packages']);
+        $this->assertSame('dev only', $json['ignored']['phpunit/phpunit']['advisories']['PKSA-e2e-CVE-2099-0003']['reason']);
+        $this->assertSame('CVE-2099-0003', $json['ignored']['phpunit/phpunit']['advisories']['PKSA-e2e-CVE-2099-0003']['allowed_by']);
     }
 }

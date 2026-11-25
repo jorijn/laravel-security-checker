@@ -5,6 +5,7 @@ namespace Jorijn\LaravelSecurityChecker\Console\Concerns;
 use Illuminate\Support\Facades\Log;
 use Jorijn\LaravelSecurityChecker\CheckerManager;
 use Jorijn\LaravelSecurityChecker\Contracts\Checker;
+use Jorijn\LaravelSecurityChecker\Contracts\ReportsIgnoredAdvisories;
 use Jorijn\LaravelSecurityChecker\Exceptions\CheckFailedException;
 use Jorijn\LaravelSecurityChecker\Severity;
 use Throwable;
@@ -29,6 +30,15 @@ trait ChecksForVulnerabilities
     public const CHECK_FAILED = 2;
 
     /**
+     * What the last check left out because of the allow list, in the report shape plus
+     * 'allowed_by' and 'reason' per advisory. Empty when the driver cannot tell (see
+     * ReportsIgnoredAdvisories).
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    protected array $ignoredAdvisories = [];
+
+    /**
      * Run the configured checker against the given composer.lock using the configured options.
      *
      * @return array<string, array<string, mixed>> The report, in the shape described on Checker
@@ -39,12 +49,13 @@ trait ChecksForVulnerabilities
     {
         $this->warnAboutDeprecatedDriver();
 
+        $this->ignoredAdvisories = [];
+        // Read once: an invalid allow list must only be warned about once.
+        $allowList = $this->allowList();
+
         try {
-            $report = $this->laravel->make(Checker::class)->check(
-                $composerLock,
-                $this->excludeDevDependencies(),
-                $this->allowedVulnerabilities()
-            );
+            $checker = $this->laravel->make(Checker::class);
+            $report = $checker->check($composerLock, $this->excludeDevDependencies(), array_keys($allowList));
         } catch (CheckFailedException $e) {
             throw $e;
         } catch (Throwable $e) {
@@ -53,7 +64,29 @@ trait ChecksForVulnerabilities
             throw CheckFailedException::because($e->getMessage(), $e);
         }
 
+        if ($checker instanceof ReportsIgnoredAdvisories) {
+            $this->ignoredAdvisories = $this->withReasons($checker->ignoredAdvisories(), $allowList);
+        }
+
         return $this->withoutAdvisoriesBelow($this->minimumSeverity(), $report);
+    }
+
+    /**
+     * Adds the reason from the allow list to every ignored advisory.
+     *
+     * @param array<string, array<string, mixed>> $ignored
+     * @param array<string, ?string> $allowList
+     * @return array<string, array<string, mixed>>
+     */
+    private function withReasons(array $ignored, array $allowList): array
+    {
+        foreach ($ignored as $package => $details) {
+            foreach ($details['advisories'] ?? [] as $id => $advisory) {
+                $ignored[$package]['advisories'][$id]['reason'] = $allowList[$advisory['allowed_by'] ?? ''] ?? null;
+            }
+        }
+
+        return $ignored;
     }
 
     /**
@@ -214,7 +247,7 @@ trait ChecksForVulnerabilities
     }
 
     /**
-     * Returns the allow list as a clean list of strings, whatever shape the config value has.
+     * Returns the allow list as a clean list of identifiers, whatever shape the config value has.
      *
      * Drivers expect a list of strings (Enlightn even type-hints `array`, so anything else
      * crashed the whole check). A malformed allow list is therefore ignored (with a warning)
@@ -224,6 +257,23 @@ trait ChecksForVulnerabilities
      * @return array<int, string>
      */
     protected function allowedVulnerabilities(): array
+    {
+        return array_keys($this->allowList());
+    }
+
+    /**
+     * The allow list as identifier => reason (null when the entry has no reason).
+     *
+     * An entry is either a plain string (the only format before 4.1), or an array like
+     * ['id' => 'GHSA-...', 'reason' => 'Why this does not affect us']. Composer's own
+     * `audit.ignore` puts the reason in the array value instead ('CVE-...' => 'reason'), but
+     * that shape already meant something else here: string keys have always been free-form
+     * labels with the identifier as the value ('laravel-xss' => 'CVE-...'), and existing
+     * configs must keep working.
+     *
+     * @return array<string, ?string>
+     */
+    protected function allowList(): array
     {
         $allowList = config('laravel-security-checker.allow_list', []);
 
@@ -253,11 +303,27 @@ trait ChecksForVulnerabilities
             return [];
         }
 
-        // Entries are matched exactly, so stray whitespace or non-string values would silently
-        // never match anything.
-        $allowList = array_map(fn ($entry) => is_string($entry) ? trim($entry) : $entry, $allowList);
+        $entries = [];
 
-        return array_values(array_filter($allowList, fn ($entry) => is_string($entry) && $entry !== ''));
+        foreach ($allowList as $entry) {
+            [$identifier, $reason] = is_array($entry)
+                ? [$entry['id'] ?? null, $entry['reason'] ?? null]
+                : [$entry, null];
+
+            // Entries are matched exactly, so stray whitespace or non-string values would
+            // silently never match anything.
+            $identifier = is_string($identifier) ? trim($identifier) : '';
+            $reason = is_string($reason) && trim($reason) !== '' ? trim($reason) : null;
+
+            if ($identifier === '') {
+                continue;
+            }
+
+            // The same identifier twice (e.g. once with and once without a reason) is one entry.
+            $entries[$identifier] = $reason ?? $entries[$identifier] ?? null;
+        }
+
+        return $entries;
     }
 
     /**

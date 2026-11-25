@@ -230,6 +230,15 @@ abstract class E2ETestCase extends TestCase
     }
 
     /**
+     * The text report without the list of advisories the allow list ignored (since 4.1), so
+     * tests can assert that an allowed advisory is no longer *reported*.
+     */
+    protected function reportedPart(string $output): string
+    {
+        return preg_split('/^\d+ advisor(y is|ies are) ignored by the allow list:$/m', $output)[0];
+    }
+
+    /**
      * Runs assertions that describe the *correct* behaviour for a known bug.
      *
      * While the bug exists the test is reported as incomplete instead of failing, so the suite

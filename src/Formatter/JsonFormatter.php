@@ -23,8 +23,10 @@ class JsonFormatter implements FormatterInterface
      * @param OutputInterface $output
      * @param string          $lockFilePath    The file path to the checked lock file
      * @param array           $vulnerabilities The report, in the shape described on Checker
+     * @param array           $ignored         Advisories left out by the allow list, see
+     *                                         ReportsIgnoredAdvisories
      */
-    public function displayResults(OutputInterface $output, $lockFilePath, array $vulnerabilities)
+    public function displayResults(OutputInterface $output, $lockFilePath, array $vulnerabilities, array $ignored = [])
     {
         $this->write($output, [
             'lock_file' => $this->path($lockFilePath),
@@ -36,6 +38,8 @@ class JsonFormatter implements FormatterInterface
             // An empty PHP array would encode as [], but consumers expect the same type (an
             // object keyed by package name) whether or not anything was found.
             'packages' => (object) $vulnerabilities,
+            // Same shape as packages, plus "allowed_by" and "reason" per advisory.
+            'ignored' => (object) $ignored,
         ]);
     }
 

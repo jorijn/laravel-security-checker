@@ -150,6 +150,12 @@ return [
      | When publishing this file you can use a regular PHP array instead:
      |   'allow_list' => ['CVE-2024-1234', 'Example vulnerability title'],
      |
+     | An entry can also record why it is allowed. security-check:now lists
+     | the ignored advisories with that reason:
+     |   ['id' => 'GHSA-xxxx-xxxx-xxxx', 'reason' => 'We never call the affected method'],
+     | or in your .env file:
+     |   LCS_ALLOW_LIST='[{"id":"GHSA-xxxx-xxxx-xxxx","reason":"Not reachable"}]'
+     |
      | An invalid value is ignored (and logged) so the check always runs.
      |
      */
