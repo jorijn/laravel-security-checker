@@ -1,0 +1,43 @@
+name: pr title
+
+# release-please derives the next version and the CHANGELOG from Conventional Commit messages.
+# Pull requests are squash-merged with the PR title as the commit message, so checking the
+# title here is what keeps the release history correct. A wrong title can still be fixed
+# before merging; a wrong commit on master cannot.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+
+permissions:
+  pull-requests: read
+
+jobs:
+  pr-title:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Must match the types in release-please-config.json. "deps" is not a standard
+          # Conventional Commit type; it marks runtime dependency changes (see dependabot.yml),
+          # which matter to users and therefore get their own CHANGELOG section.
+          types: |
+            feat
+            fix
+            perf
+            deps
+            revert
+            docs
+            chore
+            style
+            refactor
+            test
+            build
+            ci

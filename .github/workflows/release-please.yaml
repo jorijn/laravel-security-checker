@@ -1,0 +1,36 @@
+name: release-please
+
+# Keeps a release pull request open that collects every user-facing change (feat, fix, perf,
+# deps, revert) since the last release, with the CHANGELOG entry already written. Merging that
+# pull request tags vX.Y.Z and creates the GitHub release; Packagist picks the tag up through
+# its webhook, so there is no separate publish step. See RELEASING.md.
+
+on:
+  push:
+    # Each maintained major line gets its own release pull request. The 3.x branch does not
+    # exist yet; it is created when 4.0 work starts (see RELEASING.md), and listing it here
+    # already is harmless.
+    branches:
+      - master
+      - '3.x'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Two quick pushes would otherwise race to update the same release pull request.
+concurrency:
+  group: release-please-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v5
+        with:
+          # The config and manifest are read from the branch being released, so 3.x and
+          # master each track their own version and CHANGELOG.
+          target-branch: ${{ github.ref_name }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
