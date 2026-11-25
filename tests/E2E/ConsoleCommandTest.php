@@ -176,4 +176,57 @@ class ConsoleCommandTest extends E2ETestCase
         $this->assertSame(2, $process->getExitCode(), $process->getOutput().$process->getErrorOutput());
         $this->assertStringContainsString('The Enlightn security checker failed', $process->getOutput());
     }
+
+    public function testJsonFormatPrintsOnlyJsonOnStdout(): void
+    {
+        // The invalid allow list makes the command print a warning: it must go to stderr, so a
+        // script can parse stdout as is.
+        $process = $this->artisan(['security-check:now', '--format=json'], ['LCS_ALLOW_LIST' => 'not json']);
+
+        $this->assertSame(1, $process->getExitCode(), $process->getErrorOutput());
+        $this->assertStringContainsString('allow_list is invalid and has been ignored', $process->getErrorOutput());
+
+        $report = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame(static::$appPath.'/composer.lock', $report['lock_file']);
+        $this->assertSame(2, $report['vulnerable_package_count']);
+        $this->assertSame(3, $report['advisory_count']);
+        $this->assertSame(['laravel/framework', 'phpunit/phpunit'], array_keys($report['packages']));
+
+        $framework = $report['packages']['laravel/framework'];
+        $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $framework['version']);
+        $this->assertSame([
+            'title' => 'E2E fixture: framework advisory with a CVE',
+            'link' => 'https://example.com/advisories/CVE-2099-0001',
+            'cve' => 'CVE-2099-0001',
+        ], $framework['advisories']['PKSA-e2e-CVE-2099-0001']);
+    }
+
+    public function testJsonFormatWithoutVulnerabilities(): void
+    {
+        $this->useAdvisories('clean');
+
+        $process = $this->artisan(['security-check:now', '--format=json']);
+
+        $this->assertSame(0, $process->getExitCode(), $process->getErrorOutput());
+        $this->assertSame('', $process->getErrorOutput());
+
+        $report = json_decode($process->getOutput(), false, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame(0, $report->vulnerable_package_count);
+        $this->assertEquals(new \stdClass(), $report->packages);
+    }
+
+    public function testJsonFormatWhenTheCheckCannotRun(): void
+    {
+        $this->breakAdvisorySource('refuse');
+
+        $process = $this->artisan(['security-check:now', '--format=json']);
+
+        $this->assertSame(2, $process->getExitCode(), $process->getErrorOutput());
+        $this->assertStringContainsString('The security check could not run', $process->getErrorOutput());
+
+        $report = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertStringContainsString('Could not reach Packagist', $report['error']);
+        $this->assertArrayNotHasKey('packages', $report);
+    }
 }
