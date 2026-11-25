@@ -26,13 +26,6 @@ jobs:
           - php: '8.5'
             laravel: '13.*'
             variant: 'symfony-8'
-          # Laravel 14 is not released yet; this job shows early whether 4.x will work with it.
-          - php: '8.5'
-            laravel: '14 (dev-master)'
-            variant: 'laravel-14-dev'
-
-    # A failing Laravel 14 development build is a heads-up, not a reason to block a merge.
-    continue-on-error: ${{ matrix.variant == 'laravel-14-dev' }}
 
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}${{ matrix.variant != 'default' && format(' ({0})', matrix.variant) || '' }}
 
@@ -51,26 +44,57 @@ jobs:
         if: matrix.variant != 'default'
         run: composer remove --dev enlightn/security-checker --no-update
 
-      - name: Allow Laravel development versions
-        if: matrix.variant == 'laravel-14-dev'
-        run: |
-          composer config minimum-stability dev
-          composer config prefer-stable true
-
       - name: Install dependencies
         run: |
-          if [ "${{ matrix.variant }}" = "laravel-14-dev" ]; then
-            # laravel/framework's dev-master has no 14.x branch alias yet. The inline alias makes
-            # it (and the illuminate/* packages it replaces) count as 14.0.0, so it satisfies this
-            # package's ^14.0 constraints; Testbench 12.x-dev is the branch that targets it.
-            composer require --dev "laravel/framework:dev-master as 14.0.0" "orchestra/testbench:12.x-dev" --no-update
-          else
-            composer require "illuminate/contracts=${{ matrix.laravel }}" --prefer-stable --no-update
-          fi
+          composer require "illuminate/contracts=${{ matrix.laravel }}" --prefer-stable --no-update
           composer update --prefer-dist --no-interaction --no-progress
 
       - name: Show the resolved Laravel and Symfony versions
         # `composer show` takes a single package name, hence the loop.
+        run: |
+          for package in laravel/framework symfony/console; do
+            composer show "$package" | grep -E '^(name|versions) +:'
+          done
+
+      - name: Execute tests
+        run: vendor/bin/phpunit --configuration=phpunit.xml.dist
+
+  laravel-14-dev:
+    # Laravel 14 is not released yet. This job shows whether 4.x works with its development
+    # branch, but it cannot install until laravel/slack-notification-channel allows Laravel 14
+    # (its newest release requires illuminate/notifications ^12|^13). Until then it would only
+    # ever be red, so it runs on demand (Actions > tests > Run workflow) instead of on every push.
+    # The symfony-8 job above covers what actually blocked Laravel 14: Symfony 8.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    name: PHP 8.5 - Laravel 14 (dev-master)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: dom, curl, libxml, mbstring, zip, json
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          # enlightn/security-checker caps symfony/console at ^7; Laravel 14 requires Symfony 8.
+          composer remove --dev enlightn/security-checker --no-update
+          composer config minimum-stability dev
+          composer config prefer-stable true
+          # laravel/framework's dev-master has no 14.x branch alias yet. The inline alias makes
+          # it (and the illuminate/* packages it replaces) count as 14.0.0, so it satisfies this
+          # package's ^14.0 constraints; Testbench 12.x-dev is the branch that targets it.
+          composer require --dev "laravel/framework:dev-master as 14.0.0" "orchestra/testbench:12.x-dev" --no-update
+          composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Show the resolved Laravel and Symfony versions
         run: |
           for package in laravel/framework symfony/console; do
             composer show "$package" | grep -E '^(name|versions) +:'
