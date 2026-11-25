@@ -16,13 +16,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.2', '8.3', '8.4', '8.5', '8.6']
+        php: ['8.3', '8.4', '8.5', '8.6']
         laravel: ['12.*', '13.*']
-        exclude:
-          - laravel: 13.*
-            php: '8.2'
+        variant: ['default']
+        include:
+          # enlightn/security-checker (dev-only, for the deprecated driver) caps symfony/console
+          # at ^7, so the default jobs never see Symfony 8. Without it, Laravel 13 resolves
+          # Symfony 8, which is what Laravel 14 will require.
+          - php: '8.5'
+            laravel: '13.*'
+            variant: 'symfony-8'
+          # Laravel 14 is not released yet; this job shows early whether 4.x will work with it.
+          - php: '8.5'
+            laravel: '^14.0'
+            variant: 'laravel-14-dev'
 
-    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
+    # A failing Laravel 14 development build is a heads-up, not a reason to block a merge.
+    continue-on-error: ${{ matrix.variant == 'laravel-14-dev' }}
+
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}${{ matrix.variant != 'default' && format(' ({0})', matrix.variant) || '' }}
 
     steps:
       - name: Checkout code
@@ -35,10 +47,23 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, json
           coverage: pcov
 
+      - name: Drop the deprecated Enlightn driver's dependency
+        if: matrix.variant != 'default'
+        run: composer remove --dev enlightn/security-checker --no-update
+
+      - name: Allow Laravel development versions
+        if: matrix.variant == 'laravel-14-dev'
+        run: |
+          composer config minimum-stability dev
+          composer config prefer-stable true
+
       - name: Install dependencies
         run: |
           composer require "illuminate/contracts=${{ matrix.laravel }}" --prefer-stable --no-update
           composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Show the resolved Laravel and Symfony versions
+        run: composer show laravel/framework symfony/console | grep -E '^(name|versions)'
 
       - name: Execute tests
         run: vendor/bin/phpunit --configuration=phpunit.xml.dist
@@ -53,7 +78,7 @@ jobs:
         # so it covers the edges instead of the full matrix above.
         include:
           - laravel: '12'
-            php: '8.2'
+            php: '8.3'
           - laravel: '12'
             php: '8.5'
           - laravel: '13'
