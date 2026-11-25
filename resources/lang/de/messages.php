@@ -17,5 +17,8 @@ return [
     'cve' => 'CVE',
     'information' => 'Information',
     'no_recipients_configured' => 'Es wurden noch keine Empfänger konfiguriert!',
-    'body_no_vulnerabilities' => 'Es scheint, dass keine Pakete irgendwelche bekannten Schwachstellen haben. [Hier](https://github.com/jorijn/laravel-security-checker#configuration) können Sie mehr über die Deaktivierung dieser Nachricht lesen.'
+    'body_no_vulnerabilities' => 'Es scheint, dass keine Pakete irgendwelche bekannten Schwachstellen haben. [Hier](https://github.com/jorijn/laravel-security-checker#configuration) können Sie mehr über die Deaktivierung dieser Nachricht lesen.',
+    'subject_check_failed' => 'Die Sicherheitsprüfung konnte nicht ausgeführt werden',
+    'body_check_failed' => 'Die Sicherheitsprüfung von :path konnte nicht ausgeführt werden, daher wurde diese Anwendung **nicht** auf bekannte Schwachstellen geprüft. Der Fehler war:',
+    'body_check_failed_hint' => 'Die Prüfung läuft beim nächsten geplanten Termin erneut. Wenn diese Nachricht wiederholt erscheint, stellen Sie sicher, dass der Server packagist.org erreichen kann.',
 ];

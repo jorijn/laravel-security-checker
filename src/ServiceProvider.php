@@ -5,17 +5,10 @@ namespace Jorijn\LaravelSecurityChecker;
 use Jorijn\LaravelSecurityChecker\Console\SecurityCommand;
 use Jorijn\LaravelSecurityChecker\Console\SecurityMailCommand;
 use Jorijn\LaravelSecurityChecker\Console\SecuritySlackCommand;
-use Enlightn\SecurityChecker\SecurityChecker;
+use Jorijn\LaravelSecurityChecker\Contracts\Checker;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
-
     /**
      * Register the service provider.
      *
@@ -26,10 +19,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $configPath = __DIR__.'/../config/laravel-security-checker.php';
         $this->mergeConfigFrom($configPath, 'laravel-security-checker');
  
-        $this->app->bind(SecurityChecker::class, function() {
-            $temp_dir = config('laravel-security-checker.temp_dir', null);
-            return new SecurityChecker($temp_dir);
-        });
+        $this->app->singleton(CheckerManager::class);
+
+        // Not a singleton: the configured driver is looked up each time a command runs, so a
+        // config change (or a test) never sees a stale driver.
+        $this->app->bind(Checker::class, fn ($app) => $app->make(CheckerManager::class)->driver());
     }
 
     /**

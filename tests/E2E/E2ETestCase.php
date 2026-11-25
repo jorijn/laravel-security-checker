@@ -5,17 +5,19 @@ namespace Jorijn\LaravelSecurityChecker\Tests\E2E;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Yaml\Yaml;
 use ZipArchive;
 
 /**
  * Base class for the end-to-end suite.
  *
- * Unlike the unit tests (Orchestra Testbench plus a mocked SecurityChecker), these tests run
- * the real `php artisan security-check:*` commands inside a real Laravel application that has
- * this package installed through Composer, exactly like a user would. Nothing in the package
- * or in enlightn/security-checker is mocked. Only the network edges are replaced:
+ * Unlike the unit tests (Orchestra Testbench plus a mocked checker), these tests run the real
+ * `php artisan security-check:*` commands inside a real Laravel application that has this
+ * package installed through Composer, exactly like a user would. Nothing in the package or in
+ * enlightn/security-checker is mocked. Only the network edges are replaced:
  *
- *   - codeload.github.com (the advisory database) by a local TLS proxy serving fixture zips,
+ *   - the advisory sources by a local TLS proxy: packagist.org (the 4.x drivers) gets a JSON
+ *     feed, codeload.github.com (the deprecated "enlightn" driver) a zip of the same fixtures,
  *   - the Slack webhook by PHP's built-in web server recording every POST,
  *   - mail by Laravel's own "log" mailer, so the fully rendered message ends up in a file.
  *
@@ -48,8 +50,11 @@ abstract class E2ETestCase extends TestCase
         mkdir(static::$stateDir.'/tmp', 0777, true);
 
         static::generateCertificates(static::$stateDir);
-        static::buildAdvisoryArchive('vulnerable');
-        static::buildAdvisoryArchive('clean');
+
+        foreach (['vulnerable', 'clean'] as $set) {
+            static::buildAdvisoryArchive($set);
+            static::buildPackagistFeed($set);
+        }
 
         static::startProxy();
         static::startSlack();
@@ -76,11 +81,11 @@ abstract class E2ETestCase extends TestCase
     }
 
     /**
-     * Picks which fixture set the fake advisory source serves: "vulnerable" or "clean".
+     * Picks which fixture set the fake advisory sources serve: "vulnerable" or "clean".
      */
     protected function useAdvisories(string $set): void
     {
-        file_put_contents(static::$stateDir.'/mode', 'serve:'.$set.'.zip');
+        file_put_contents(static::$stateDir.'/mode', 'serve:'.$set);
     }
 
     /**
@@ -117,7 +122,8 @@ abstract class E2ETestCase extends TestCase
         $proxy = 'http://127.0.0.1:'.static::$proxyPort;
 
         return [
-            // Guzzle (and so Enlightn) picks these up; lower-case variants are read by libcurl.
+            // Guzzle (so Laravel's HTTP client and Enlightn) picks these up; libcurl reads the
+            // lower-case variants.
             'HTTPS_PROXY' => $proxy,
             'https_proxy' => $proxy,
             // false removes the variable: a proxy inherited from the host must not intercept
@@ -140,6 +146,9 @@ abstract class E2ETestCase extends TestCase
             'LCS_NOTIFY_WITHOUT_VULNERABILITIES' => false,
             'LCS_EXCLUDE_DEV' => false,
             'LCS_ALLOW_LIST' => false,
+            'LCS_DRIVER' => false,
+            'LCS_NOTIFY_ON_FAILURE' => false,
+            'LCS_PACKAGIST_URL' => false,
         ];
     }
 
@@ -296,7 +305,7 @@ abstract class E2ETestCase extends TestCase
     }
 
     /**
-     * Creates a throw-away CA plus a codeload.github.com certificate signed by it.
+     * Creates a throw-away CA plus a certificate for the faked hosts, signed by it.
      *
      * Generated per run instead of committed, so no private key ever lives in the repository
      * (secret scanners would rightly complain) and the certificate never expires in CI.
@@ -316,7 +325,7 @@ abstract class E2ETestCase extends TestCase
             basicConstraints = critical, CA:FALSE
             keyUsage = critical, digitalSignature, keyEncipherment
             extendedKeyUsage = serverAuth
-            subjectAltName = DNS:codeload.github.com
+            subjectAltName = DNS:codeload.github.com, DNS:packagist.org
             subjectKeyIdentifier = hash
             authorityKeyIdentifier = keyid
             CNF);
@@ -328,7 +337,7 @@ abstract class E2ETestCase extends TestCase
         $caCert = openssl_csr_sign($caCsr, null, $caKey, 2, ['digest_alg' => 'sha256', 'config' => $config, 'x509_extensions' => 'v3_ca'], 1);
 
         $leafKey = openssl_pkey_new($keyOptions);
-        $leafCsr = openssl_csr_new(['commonName' => 'codeload.github.com'], $leafKey, ['digest_alg' => 'sha256', 'config' => $config]);
+        $leafCsr = openssl_csr_new(['commonName' => 'packagist.org'], $leafKey, ['digest_alg' => 'sha256', 'config' => $config]);
         $leafCert = openssl_csr_sign($leafCsr, $caCert, $caKey, 2, ['digest_alg' => 'sha256', 'config' => $config, 'x509_extensions' => 'v3_leaf'], 2);
 
         if (!$caCert || !$leafCert) {
@@ -357,5 +366,48 @@ abstract class E2ETestCase extends TestCase
         }
 
         $zip->close();
+    }
+
+    /**
+     * Converts a fixture set to the JSON that https://packagist.org/api/security-advisories/ serves.
+     *
+     * The YAML files stay the single source of truth for both drivers. The conversion mirrors
+     * what Packagist does with FriendsOfPHP advisories: every branch becomes one range, and the
+     * ranges are OR-ed together ("<1.0|>=2.0,<2.1").
+     */
+    private static function buildPackagistFeed(string $set): void
+    {
+        $source = __DIR__.'/fixtures/advisories/'.$set;
+        $advisories = [];
+
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source, \FilesystemIterator::SKIP_DOTS));
+
+        foreach ($files as $file) {
+            $advisory = Yaml::parseFile($file->getPathname());
+            $package = substr($advisory['reference'], strlen('composer://'));
+            $id = 'PKSA-e2e-'.pathinfo($file->getFilename(), PATHINFO_FILENAME);
+
+            $advisories[$package][] = [
+                'advisoryId' => $id,
+                'packageName' => $package,
+                'remoteId' => $package.'/'.$file->getFilename(),
+                'title' => $advisory['title'],
+                'link' => $advisory['link'],
+                'cve' => $advisory['cve'],
+                'affectedVersions' => implode('|', array_map(
+                    fn (array $branch) => implode(',', $branch['versions']),
+                    array_values($advisory['branches'])
+                )),
+                'source' => 'FriendsOfPHP/security-advisories',
+                'reportedAt' => '2099-01-01 00:00:00',
+                'composerRepository' => 'https://packagist.org',
+                'severity' => null,
+                'sources' => [['name' => 'FriendsOfPHP/security-advisories', 'remoteId' => $package.'/'.$file->getFilename()]],
+            ];
+        }
+
+        // Sorted, so the order in reports never depends on the file system.
+        ksort($advisories);
+        file_put_contents(static::$stateDir.'/'.$set.'.json', json_encode(['advisories' => $advisories], JSON_PRETTY_PRINT));
     }
 }

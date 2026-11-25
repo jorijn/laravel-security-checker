@@ -32,12 +32,14 @@ cd "$TARGET"
 # A fixed version is declared for the path repository: otherwise Composer derives one from
 # the checked-out branch name, and that version (a dev-* one) would not satisfy the stable require below.
 composer config repositories.package "$(cat <<JSON
-{"type": "path", "url": "${PACKAGE_DIR}", "options": {"symlink": true, "versions": {"jorijn/laravel-security-checker": "3.99.0"}}}
+{"type": "path", "url": "${PACKAGE_DIR}", "options": {"symlink": true, "versions": {"jorijn/laravel-security-checker": "4.99.0"}}}
 JSON
 )"
 
+# enlightn/security-checker is only needed by the deprecated "enlightn" driver, which the
+# e2e suite still covers until it is removed in 5.0.
 # shellcheck disable=SC2086
-composer require "jorijn/laravel-security-checker:*" "laravel/slack-notification-channel:^3.0" \
+composer require "jorijn/laravel-security-checker:*" "laravel/slack-notification-channel:^3.0" "enlightn/security-checker:^2.0" \
     $FLAGS --no-interaction --no-progress --with-all-dependencies
 
 # The e2e "translations" scenario checks that the app's own lang/ directory keeps working

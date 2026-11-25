@@ -2,11 +2,12 @@
 
 namespace Jorijn\LaravelSecurityChecker\Console;
 
-use Enlightn\SecurityChecker\SecurityChecker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Jorijn\LaravelSecurityChecker\Console\Concerns\ChecksForVulnerabilities;
+use Jorijn\LaravelSecurityChecker\Exceptions\CheckFailedException;
+use Jorijn\LaravelSecurityChecker\Mailables\SecurityCheckFailedMail;
 use Jorijn\LaravelSecurityChecker\Mailables\SecurityMail;
 
 class SecurityMailCommand extends Command
@@ -24,23 +25,6 @@ class SecurityMailCommand extends Command
     protected $description = 'Emails any vulnerabilities for packages you have in your composer.lock file.';
 
     /**
-     * @var SecurityChecker
-     */
-    protected $checker;
-
-    /**
-     * SecurityCommand constructor.
-     *
-     * @param SecurityChecker $checker
-     */
-    public function __construct(SecurityChecker $checker)
-    {
-        parent::__construct();
-
-        $this->checker = $checker;
-    }
-
-    /**
      * Execute the command
      */
     public function handle()
@@ -50,7 +34,12 @@ class SecurityMailCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $checkResult = $this->checkForVulnerabilities($composerLock);
+
+        try {
+            $checkResult = $this->checkForVulnerabilities($composerLock);
+        } catch (CheckFailedException $e) {
+            return $this->handleFailedCheck($e, $composerLock);
+        }
 
         // if the user didn't want any email if there are no results,
         // cancel execution here.
@@ -63,9 +52,7 @@ class SecurityMailCommand extends Command
 
         if ($recipients->count() === 0) {
             Log::error('vulnerabilities were found, but there are no recipients configured');
-            $this->error(
-                /** @scrutinizer ignore-type */__('laravel-security-checker::messages.no_recipients_configured')
-            );
+            $this->error(__('laravel-security-checker::messages.no_recipients_configured'));
             return 1;
         }
 
@@ -73,6 +60,23 @@ class SecurityMailCommand extends Command
         Mail::to($recipients->toArray())->send(new SecurityMail($checkResult));
 
         return 0;
+    }
+
+    /**
+     * Mails the "security check could not run" alert to the configured recipients.
+     */
+    protected function notifyAboutFailedCheck(CheckFailedException $e, string $composerLock): void
+    {
+        $recipients = $this->recipients();
+
+        if ($recipients->count() === 0) {
+            Log::error('the security check could not run, and there are no recipients configured to alert');
+
+            return;
+        }
+
+        Mail::to($recipients->toArray())->send(new SecurityCheckFailedMail($e->getMessage(), $composerLock));
+        Log::warning('the security check could not run, alert emailed to configured recipients');
     }
 
     /**

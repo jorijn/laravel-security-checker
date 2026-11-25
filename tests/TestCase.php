@@ -2,7 +2,8 @@
 
 namespace Jorijn\LaravelSecurityChecker\Tests;
 
-use Enlightn\SecurityChecker\SecurityChecker;
+use Jorijn\LaravelSecurityChecker\Contracts\Checker;
+use Jorijn\LaravelSecurityChecker\Exceptions\CheckFailedException;
 use Jorijn\LaravelSecurityChecker\ServiceProvider;
 
 class TestCase extends \Orchestra\Testbench\TestCase
@@ -22,13 +23,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function bindPassingSecurityChecker(bool $excludeDev = false, array $allowList = []): void
     {
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
+        $securityCheckerMock = \Mockery::mock(Checker::class);
         $securityCheckerMock->allows('check')
             ->with(base_path('composer.lock'), $excludeDev, $allowList)
             ->andReturns([]);
 
         // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
+        $this->app->instance(Checker::class, $securityCheckerMock);
     }
 
     /**
@@ -37,13 +38,25 @@ class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function bindFailingSecurityChecker(bool $excludeDev = false, array $allowList = []): void
     {
-        $securityCheckerMock = \Mockery::mock(SecurityChecker::class);
+        $securityCheckerMock = \Mockery::mock(Checker::class);
         $securityCheckerMock->allows('check')
             ->with(base_path('composer.lock'), $excludeDev, $allowList)
             ->andReturns($this->getFakeVulnerabilityReport());
 
         // bind Mockery instance to the app container
-        $this->app->instance(SecurityChecker::class, $securityCheckerMock);
+        $this->app->instance(Checker::class, $securityCheckerMock);
+    }
+
+    /**
+     * Binds a checker that cannot run, the way a driver reports e.g. an unreachable Packagist.
+     */
+    protected function bindBrokenSecurityChecker(?\Throwable $exception = null): void
+    {
+        $securityCheckerMock = \Mockery::mock(Checker::class);
+        $securityCheckerMock->allows('check')
+            ->andThrow($exception ?? CheckFailedException::because('Could not reach Packagist: connection refused'));
+
+        $this->app->instance(Checker::class, $securityCheckerMock);
     }
 
     /**
