@@ -27,7 +27,7 @@ class SlackCommandTest extends E2ETestCase
         $attachment = $payload['attachments'][0]['text'];
         $this->assertStringStartsWith('2 packages have known vulnerabilities', $attachment);
         $this->assertMatchesRegularExpression('/^\*laravel\/framework \(\d+\.\d+\.\d+\)\*$/m', $attachment);
-        $this->assertStringContainsString(' * CVE-2099-0001 E2E fixture: framework advisory with a CVE https://example.com/advisories/CVE-2099-0001', $attachment);
+        $this->assertStringContainsString(' * [critical] CVE-2099-0001 E2E fixture: framework advisory with a CVE https://example.com/advisories/CVE-2099-0001', $attachment);
         $this->assertStringContainsString(' * E2E fixture: framework advisory without a CVE https://example.com/advisories/no-cve', $attachment);
         $this->assertStringContainsString('CVE-2099-0003', $attachment);
         $this->assertStringNotContainsString('CVE-2099-0009', $attachment);

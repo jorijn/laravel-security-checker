@@ -118,6 +118,22 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Laravel Security Checker — Minimum severity
+     |--------------------------------------------------------------------------
+     |
+     | Only report advisories of at least this severity: "low", "medium",
+     | "high" or "critical". Empty (the default) reports everything.
+     |
+     | Applies to every command, including the exit code of security-check:now.
+     | Advisories without a known severity are always reported, because they
+     | might be critical. With the deprecated "enlightn" driver no advisory has
+     | a known severity, so this setting has no effect there.
+     |
+     */
+    'minimum_severity' => env('LCS_MINIMUM_SEVERITY'),
+
+    /*
+     |--------------------------------------------------------------------------
      | Laravel Security Checker — Allow list
      |--------------------------------------------------------------------------
      |

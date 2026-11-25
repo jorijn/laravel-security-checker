@@ -18,7 +18,7 @@ class ConsoleCommandTest extends E2ETestCase
         $this->assertStringContainsString('[CRITICAL] 2 packages have known vulnerabilities', $output);
 
         $this->assertMatchesRegularExpression('/^laravel\/framework \(\d+\.\d+\.\d+\)$/m', $output);
-        $this->assertStringContainsString(' * CVE-2099-0001: E2E fixture: framework advisory with a CVE', $output);
+        $this->assertStringContainsString(' * [critical] CVE-2099-0001: E2E fixture: framework advisory with a CVE', $output);
         // The link is indented below its advisory. Laravel 12 keeps the three spaces the
         // formatter writes, Laravel 13 prints one, so only require "indented".
         $this->assertMatchesRegularExpression('/^ +https:\/\/example\.com\/advisories\/CVE-2099-0001$/m', $output);
@@ -199,6 +199,7 @@ class ConsoleCommandTest extends E2ETestCase
             'title' => 'E2E fixture: framework advisory with a CVE',
             'link' => 'https://example.com/advisories/CVE-2099-0001',
             'cve' => 'CVE-2099-0001',
+            'severity' => 'critical',
         ], $framework['advisories']['PKSA-e2e-CVE-2099-0001']);
     }
 
@@ -228,5 +229,39 @@ class ConsoleCommandTest extends E2ETestCase
         $report = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
         $this->assertStringContainsString('Could not reach Packagist', $report['error']);
         $this->assertArrayNotHasKey('packages', $report);
+    }
+
+    public function testMinimumSeverityLeavesOutLowerAdvisoriesButKeepsUnknownOnes(): void
+    {
+        $process = $this->artisan(['security-check:now'], ['LCS_MINIMUM_SEVERITY' => 'high']);
+        $output = $process->getOutput();
+
+        $this->assertSame(1, $process->getExitCode(), $process->getErrorOutput());
+        $this->assertStringContainsString('[CRITICAL] 1 package has known vulnerabilities', $output);
+        $this->assertStringContainsString(' * [critical] CVE-2099-0001', $output);
+        // no severity known: reported, because it might be critical
+        $this->assertStringContainsString(' * E2E fixture: framework advisory without a CVE', $output);
+        // severity "low"
+        $this->assertStringNotContainsString('phpunit/phpunit', $output);
+    }
+
+    public function testMinimumSeverityAboveEverythingFoundExitsWithZero(): void
+    {
+        $process = $this->artisan(['security-check:now'], [
+            'LCS_MINIMUM_SEVERITY' => 'critical',
+            'LCS_ALLOW_LIST' => json_encode(['CVE-2099-0001', 'E2E fixture: framework advisory without a CVE']),
+        ]);
+
+        $this->assertSame(0, $process->getExitCode(), $process->getOutput());
+        $this->assertStringContainsString('[OK] 0 packages have known vulnerabilities', $process->getOutput());
+    }
+
+    public function testInvalidMinimumSeverityIsIgnoredWithAWarning(): void
+    {
+        $process = $this->artisan(['security-check:now'], ['LCS_MINIMUM_SEVERITY' => 'severe']);
+
+        $this->assertSame(1, $process->getExitCode());
+        $this->assertStringContainsString('minimum_severity "severe" is invalid and has been ignored', $process->getOutput());
+        $this->assertStringContainsString('[CRITICAL] 2 packages have known vulnerabilities', $process->getOutput());
     }
 }

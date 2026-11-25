@@ -49,6 +49,10 @@ class MailCommandTest extends E2ETestCase
         $this->assertContains('CVE-2099-0001', $cells);
         $this->assertContains('CVE-2099-0003', $cells);
         $this->assertNotContains('1', $cells);
+
+        // The severity column (since 4.1); empty for the advisory without a known severity.
+        $this->assertContains('critical', $cells);
+        $this->assertContains('low', $cells);
     }
 
     public function testEveryPackageGetsItsOwnHeading(): void

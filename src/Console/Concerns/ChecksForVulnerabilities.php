@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Jorijn\LaravelSecurityChecker\CheckerManager;
 use Jorijn\LaravelSecurityChecker\Contracts\Checker;
 use Jorijn\LaravelSecurityChecker\Exceptions\CheckFailedException;
+use Jorijn\LaravelSecurityChecker\Severity;
 use Throwable;
 
 /**
@@ -39,7 +40,7 @@ trait ChecksForVulnerabilities
         $this->warnAboutDeprecatedDriver();
 
         try {
-            return $this->laravel->make(Checker::class)->check(
+            $report = $this->laravel->make(Checker::class)->check(
                 $composerLock,
                 $this->excludeDevDependencies(),
                 $this->allowedVulnerabilities()
@@ -51,6 +52,75 @@ trait ChecksForVulnerabilities
             // and must be reported as such, never as "no vulnerabilities".
             throw CheckFailedException::because($e->getMessage(), $e);
         }
+
+        return $this->withoutAdvisoriesBelow($this->minimumSeverity(), $report);
+    }
+
+    /**
+     * Drops the advisories below the configured minimum severity, and the packages left without
+     * any advisory.
+     *
+     * Done here rather than in the drivers, so it works the same for every driver (custom ones
+     * included) without changing the Checker interface. Advisories of unknown severity are
+     * always kept, see Severity.
+     *
+     * @param array<string, array<string, mixed>> $report
+     * @return array<string, array<string, mixed>>
+     */
+    private function withoutAdvisoriesBelow(?string $minimum, array $report): array
+    {
+        if ($minimum === null) {
+            return $report;
+        }
+
+        foreach ($report as $package => $details) {
+            $details['advisories'] = array_filter(
+                $details['advisories'] ?? [],
+                fn ($advisory) => Severity::meets(
+                    is_array($advisory) ? ($advisory['severity'] ?? null) : null,
+                    $minimum
+                )
+            );
+
+            if ($details['advisories'] === []) {
+                unset($report[$package]);
+            } else {
+                $report[$package] = $details;
+            }
+        }
+
+        return $report;
+    }
+
+    /**
+     * The configured minimum severity, or null to report everything (the default).
+     *
+     * An unknown value is ignored with a warning, like an invalid allow list: a typo must not
+     * silently hide advisories, so it falls back to reporting more rather than less.
+     */
+    protected function minimumSeverity(): ?string
+    {
+        $minimum = config('laravel-security-checker.minimum_severity');
+
+        if ($minimum === null || (is_string($minimum) && trim($minimum) === '')) {
+            return null;
+        }
+
+        $severity = Severity::normalize($minimum);
+
+        if ($severity === null) {
+            $message = sprintf(
+                'The laravel-security-checker minimum_severity "%s" is invalid and has been ignored, '
+                    .'expected one of: %s.',
+                is_scalar($minimum) ? $minimum : get_debug_type($minimum),
+                implode(', ', Severity::LEVELS)
+            );
+
+            Log::warning($message);
+            $this->warn($message);
+        }
+
+        return $severity;
     }
 
     /**

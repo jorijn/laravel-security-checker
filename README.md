@@ -97,6 +97,22 @@ If your dev dependencies never reach production, you can leave them out of the c
 LCS_EXCLUDE_DEV=true
 ```
 
+#### Minimum severity
+Packagist knows the severity of most advisories: `low`, `medium`, `high` or `critical`. To only be told about the more
+serious ones, add the lowest severity you want to see to your `.env` file:
+
+```
+LCS_MINIMUM_SEVERITY=high
+```
+
+Keep in mind:
+* This applies to every command, including the exit code of `security-check:now`.
+* Advisories without a known severity (a few percent of them) are always reported, because they might be critical.
+  The deprecated `enlightn` driver knows no severities at all, so the setting has no effect there.
+* An invalid value is ignored and logged as a warning, so nothing is hidden by a typo.
+
+The severity is shown in every report, when it is known.
+
 #### Allowing known vulnerabilities
 Sometimes a reported vulnerability doesn't affect you, or you've accepted the risk. You can stop it from being reported by
 adding its CVE identifier or its exact advisory title to the allow list. Many advisories have no CVE; those can be allowed by their
@@ -196,7 +212,8 @@ php artisan security-check:now --format=json > security-report.json
                 "PKSA-xxxx-xxxx-xxxx": {
                     "title": "Example vulnerability title",
                     "link": "https://github.com/advisories/GHSA-xxxx-xxxx-xxxx",
-                    "cve": "CVE-2025-1234"
+                    "cve": "CVE-2025-1234",
+                    "severity": "high"
                 }
             }
         }
@@ -205,6 +222,7 @@ php artisan security-check:now --format=json > security-report.json
 ```
 
 * `packages` is always an object, also when nothing was found (`{}`).
+* `severity` is `low`, `medium`, `high`, `critical`, or `null` when unknown.
 * Only the JSON document is written to stdout. Warnings and errors go to stderr.
 * When the check could not run, the document holds an `error` message instead of `packages`, and the exit code is `2`.
 * The exit codes are the same as for the text output.
