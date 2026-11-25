@@ -150,6 +150,9 @@ abstract class E2ETestCase extends TestCase
             'LCS_NOTIFY_ON_FAILURE' => false,
             'LCS_PACKAGIST_URL' => false,
             'LCS_MINIMUM_SEVERITY' => false,
+            'LCS_WEBHOOK_URL' => false,
+            'LCS_WEBHOOK_SECRET' => false,
+            'LCS_TEAMS_WEBHOOK' => false,
         ];
     }
 

@@ -67,11 +67,11 @@ By default, the package won't email you when there are no vulnerabilities found.
 LCS_NOTIFY_WITHOUT_VULNERABILITIES=true
 ```
 
-Values like `1`, `yes` and `on` work as well. This setting also applies to Slack.
+Values like `1`, `yes` and `on` work as well. This setting also applies to Slack, Teams and the webhook.
 
 #### When the check itself cannot run
 If the check cannot run, for example because Packagist cannot be reached or `composer.lock` is missing,
-`security-check:email` and `security-check:slack` send a "the security check could not run" message instead, so a broken
+`security-check:email`, `:slack`, `:teams` and `:webhook` send a "the security check could not run" message instead, so a broken
 check never looks like a quiet week without vulnerabilities. To turn that message off, add:
 
 ```
@@ -89,6 +89,44 @@ E.g.:
 ```
 LCS_SLACK_WEBHOOK=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
 ```
+
+#### Microsoft Teams
+`security-check:teams` posts the report to a Teams channel. In Teams, add a workflow to the channel with the Workflows app
+(template "Send webhook alerts to a channel"), and put its URL in your `.env` file:
+
+```
+LCS_TEAMS_WEBHOOK=https://prod-00.westeurope.logic.azure.com:443/workflows/...
+```
+
+The connector-based "Incoming Webhook" URLs (`...webhook.office.com/...`) no longer work: Microsoft retired them in May 2026.
+Very long reports are shortened to stay below Teams' message size limit; the message then says how many advisories it left out.
+
+#### Any other webhook
+`security-check:webhook` POSTs the report as JSON to any URL, for example an incident tool, an automation platform or your own
+endpoint:
+
+```
+LCS_WEBHOOK_URL=https://example.com/hooks/security
+LCS_WEBHOOK_SECRET=a-long-random-string
+```
+
+The body is the same document as the [JSON output](#json-output), with two extra keys: `event` (`report`, or `check_failed`
+with an `error` message when the check could not run) and `application` (`name`, `url` and `environment` of your app).
+
+With `LCS_WEBHOOK_SECRET` set (optional), every request carries an `X-Signature-256` header: `sha256=` followed by the
+HMAC-SHA256 of the body. Verify it on the receiving side before trusting the request:
+
+```php
+$expected = 'sha256='.hash_hmac('sha256', $request->getContent(), $secret);
+
+if (!hash_equals($expected, (string) $request->header('X-Signature-256'))) {
+    abort(403);
+}
+```
+
+`LCS_NOTIFY_WITHOUT_VULNERABILITIES` and `LCS_NOTIFY_ON_FAILURE` apply to both commands, like they do to email and Slack.
+When the report cannot be delivered (the receiver answers with an error, or cannot be reached), the command logs the
+error and exits with code `1`.
 
 #### Excluding dev dependencies
 If your dev dependencies never reach production, you can leave them out of the check by adding the following entry to your `.env` file.
@@ -202,7 +240,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('security-check:email')->weekly();
 ```
 
-Use `security-check:slack` instead to send the report to Slack.
+Use `security-check:slack`, `security-check:teams` or `security-check:webhook` instead to send the report elsewhere.
 
 ## Running as a command
 You can run the check yourself with `php artisan security-check:now`, for example in a CI pipeline or a deploy script.
@@ -251,7 +289,7 @@ php artisan security-check:now --format=json > security-report.json
 | Exit code | Meaning |
 |---|---|
 | `0` | The check ran and found no vulnerabilities (or the mail/Slack report was sent). |
-| `1` | `security-check:now` found vulnerabilities, or `security-check:email` has no recipients configured. |
+| `1` | `security-check:now` found vulnerabilities, `security-check:email` has no recipients configured, or `security-check:teams`/`:webhook` has no URL configured or could not deliver the report. |
 | `2` | The check could not run, for example because Packagist could not be reached. This does **not** mean there are no vulnerabilities. |
 
 ## Translations
