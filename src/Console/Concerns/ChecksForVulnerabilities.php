@@ -2,6 +2,7 @@
 
 namespace Jorijn\LaravelSecurityChecker\Console\Concerns;
 
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
 use Jorijn\LaravelSecurityChecker\CheckerManager;
 use Jorijn\LaravelSecurityChecker\Contracts\Checker;
@@ -226,6 +227,133 @@ trait ChecksForVulnerabilities
             config('laravel-security-checker.exclude_dev', false),
             FILTER_VALIDATE_BOOLEAN
         );
+    }
+
+    /**
+     * With LCS_NOTIFY_ONLY_NEW, returns only the findings this channel has not reported before.
+     *
+     * "Before" means: in the last run that completed. The state is the set of findings of that
+     * run (not everything ever seen), so an advisory that disappears (e.g. after an update) and
+     * comes back later is new again. Without any state yet (first run, cleared cache) every
+     * finding is new: when in doubt, this sends too much rather than too little.
+     *
+     * @param array<string, array<string, mixed>> $report
+     * @return array<string, array<string, mixed>>
+     */
+    protected function newFindings(array $report, string $composerLock): array
+    {
+        if (!$this->notifyOnlyNew()) {
+            return $report;
+        }
+
+        $previous = $this->previousFindings($composerLock);
+
+        if ($previous === null) {
+            return $report;
+        }
+
+        $previous = array_flip($previous);
+
+        foreach ($report as $package => $details) {
+            $details['advisories'] = array_filter(
+                $details['advisories'] ?? [],
+                fn ($id) => !isset($previous[$this->fingerprint($package, (string) $id)]),
+                ARRAY_FILTER_USE_KEY
+            );
+
+            if ($details['advisories'] === []) {
+                unset($report[$package]);
+            } else {
+                $report[$package] = $details;
+            }
+        }
+
+        return $report;
+    }
+
+    /**
+     * Stores the findings of this run as the state the next run compares against.
+     *
+     * Commands call this only once the report was delivered (or there was nothing to deliver),
+     * so a failed delivery is tried again, as new, on the next run.
+     *
+     * @param array<string, array<string, mixed>> $report The full report, not only the new findings
+     */
+    protected function rememberFindings(array $report, string $composerLock): void
+    {
+        if (!$this->notifyOnlyNew()) {
+            return;
+        }
+
+        $fingerprints = [];
+
+        foreach ($report as $package => $details) {
+            foreach (array_keys($details['advisories'] ?? []) as $id) {
+                $fingerprints[] = $this->fingerprint($package, (string) $id);
+            }
+        }
+
+        try {
+            $this->stateStore()->forever($this->stateKey($composerLock), $fingerprints);
+        } catch (Throwable $e) {
+            // The report itself went out; a cache that is down must not turn that into a failure.
+            // The next run will then report everything again, which is the safe side.
+            Log::warning('could not store which vulnerabilities were reported: '.$e->getMessage(), ['exception' => $e]);
+        }
+    }
+
+    /**
+     * Whether only findings that were not reported by the previous run are sent (default: no).
+     */
+    protected function notifyOnlyNew(): bool
+    {
+        return filter_var(config('laravel-security-checker.notify_only_new', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * @return ?array<int, string> null when there is no state yet
+     */
+    private function previousFindings(string $composerLock): ?array
+    {
+        try {
+            $previous = $this->stateStore()->get($this->stateKey($composerLock));
+        } catch (Throwable $e) {
+            Log::warning('could not read which vulnerabilities were reported before, reporting all of them: '
+                .$e->getMessage(), ['exception' => $e]);
+
+            return null;
+        }
+
+        return is_array($previous) ? array_values(array_filter($previous, 'is_string')) : null;
+    }
+
+    /**
+     * The state lives in Laravel's cache: shared between servers when the cache is (Redis,
+     * database, ...), and nothing to migrate. LCS_STATE_CACHE_STORE picks another store, e.g.
+     * one that a deploy does not clear.
+     */
+    private function stateStore(): CacheRepository
+    {
+        $store = config('laravel-security-checker.state_cache_store');
+
+        return $this->laravel->make('cache')->store(is_string($store) && trim($store) !== '' ? trim($store) : null);
+    }
+
+    /**
+     * One state per channel (email and Slack each report a finding once) and per lock file.
+     */
+    private function stateKey(string $composerLock): string
+    {
+        return 'laravel-security-checker:reported:'.$this->getName().':'.sha1(realpath($composerLock) ?: $composerLock);
+    }
+
+    /**
+     * A finding is an advisory for a package, whatever version is installed: upgrading to a
+     * version that is still affected does not make the same advisory new.
+     */
+    private function fingerprint(string $package, string $advisoryId): string
+    {
+        return $package.'|'.$advisoryId;
     }
 
     /**

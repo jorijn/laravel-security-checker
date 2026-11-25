@@ -50,13 +50,24 @@ class SecuritySlackCommand extends Command
         // cancel execution here if user does not want to be notified when there are 0 vulns.
         if (count($vulnerabilities) === 0 && !$this->notifyWithoutVulnerabilities()) {
             Log::info('no vulnerabilities were found, not sending a slack notification');
+            $this->rememberFindings($vulnerabilities, $composerLock);
+
+            return 0;
+        }
+
+        $newVulnerabilities = $this->newFindings($vulnerabilities, $composerLock);
+
+        if (count($vulnerabilities) > 0 && count($newVulnerabilities) === 0) {
+            Log::info('no new vulnerabilities since the last run, not sending a slack notification');
+            $this->rememberFindings($vulnerabilities, $composerLock);
 
             return 0;
         }
 
         Log::warning('vulnerabilities were found, sending slack notification to configured hook');
         Notification::route('slack', config('laravel-security-checker.slack_webhook_url', null))
-            ->notify(new SecuritySlackNotification($vulnerabilities, realpath($composerLock)));
+            ->notify(new SecuritySlackNotification($newVulnerabilities, realpath($composerLock)));
+        $this->rememberFindings($vulnerabilities, $composerLock);
 
         return 0;
     }

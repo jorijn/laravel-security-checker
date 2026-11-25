@@ -45,6 +45,15 @@ class SecurityMailCommand extends Command
         // cancel execution here.
         if (!$this->notifyWithoutVulnerabilities() && \count($checkResult) === 0) {
             Log::info('no vulnerabilities were found, not sending any email');
+            $this->rememberFindings($checkResult, $composerLock);
+            return 0;
+        }
+
+        $newVulnerabilities = $this->newFindings($checkResult, $composerLock);
+
+        if (\count($checkResult) > 0 && \count($newVulnerabilities) === 0) {
+            Log::info('no new vulnerabilities since the last run, not sending any email');
+            $this->rememberFindings($checkResult, $composerLock);
             return 0;
         }
 
@@ -57,7 +66,8 @@ class SecurityMailCommand extends Command
         }
 
         Log::warning('vulnerabilities were found, emailed to configured recipients');
-        Mail::to($recipients->toArray())->send(new SecurityMail($checkResult));
+        Mail::to($recipients->toArray())->send(new SecurityMail($newVulnerabilities));
+        $this->rememberFindings($checkResult, $composerLock);
 
         return 0;
     }

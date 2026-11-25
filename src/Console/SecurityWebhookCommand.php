@@ -77,6 +77,8 @@ class SecurityWebhookCommand extends WebhookChannelCommand
         return [
             // "report" (whether or not anything was found) or "check_failed"
             'event' => $event,
+            // With LCS_NOTIFY_ONLY_NEW, "packages" holds only what the previous run did not report.
+            'only_new_findings' => $this->notifyOnlyNew(),
             'application' => [
                 'name' => config('app.name'),
                 'url' => config('app.url'),

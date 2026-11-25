@@ -32,7 +32,8 @@ class WebhookChannelsTest extends E2ETestCase
         $this->assertSame(['name' => 'E2E App', 'url' => 'http://e2e.test', 'environment' => 'local'], $payload['application']);
 
         $json = json_decode($this->artisan(['security-check:now', '--format=json'])->getOutput(), true, flags: JSON_THROW_ON_ERROR);
-        unset($payload['event'], $payload['application']);
+        $this->assertFalse($payload['only_new_findings']);
+        unset($payload['event'], $payload['application'], $payload['only_new_findings']);
         $this->assertSame($json, $payload);
     }
 
