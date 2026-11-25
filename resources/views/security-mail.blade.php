@@ -5,10 +5,10 @@
 ## {{ $package }} — {{ $report['version'] }}
 
 @component('mail::table')
-| @lang('laravel-security-checker::messages.title') | @lang('laravel-security-checker::messages.cve') | @lang('laravel-security-checker::messages.information') |
-| :---- | :-- | :---------- |
+| @lang('laravel-security-checker::messages.title') | @lang('laravel-security-checker::messages.severity') | @lang('laravel-security-checker::messages.cve') | @lang('laravel-security-checker::messages.information') |
+| :---- | :-- | :-- | :---------- |
 @foreach($report['advisories'] as $key => $information)
-| {{ $information['title'] }} | {{ $information['cve'] ?? '' }} | [@lang('laravel-security-checker::messages.view')]({{ $information['link'] }})
+| {{ $information['title'] }} | {{ $information['severity'] ?? '' }} | {{ $information['cve'] ?? '' }} | [@lang('laravel-security-checker::messages.view')]({{ $information['link'] }})
 @endforeach
 @endcomponent
 {{-- Keep the blank line below: it ends the table's HTML block, so the next package's "##" line is rendered as a heading. --}}

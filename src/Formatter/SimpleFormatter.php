@@ -45,6 +45,10 @@ class SimpleFormatter implements FormatterInterface
 
                 foreach ($issues['advisories'] as $issue => $details) {
                     $output->write(' * ');
+                    // Optional in the report shape, and unknown for many advisories.
+                    if (!empty($details['severity'])) {
+                        $output->write('['.$details['severity'].'] ');
+                    }
                     if ($details['cve']) {
                         $output->write('<comment>'.$details['cve'].': </comment>');
                     }

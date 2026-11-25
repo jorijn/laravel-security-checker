@@ -43,12 +43,15 @@ class PackagistCheckerTest extends TestCase
                         'title' => 'Framework advisory with a CVE',
                         'link' => 'https://github.com/advisories/GHSA-0001',
                         'cve' => 'CVE-2099-0001',
+                        'severity' => 'high',
                     ],
                     // no CVE, no link: still reported, with null and '' like the Enlightn driver
                     'PKSA-0003' => [
                         'title' => 'Framework advisory without a CVE',
                         'link' => '',
                         'cve' => null,
+                        // the feed says "MODERATE", normalized to Packagist's own "medium"
+                        'severity' => 'medium',
                     ],
                 ],
             ],
@@ -56,14 +59,14 @@ class PackagistCheckerTest extends TestCase
                 'version' => '9.5.0',
                 'time' => null,
                 'advisories' => [
-                    'PKSA-0005' => ['title' => 'Dev dependency advisory', 'link' => 'https://example.com/5', 'cve' => 'CVE-2099-0005'],
+                    'PKSA-0005' => ['title' => 'Dev dependency advisory', 'link' => 'https://example.com/5', 'cve' => 'CVE-2099-0005', 'severity' => null],
                 ],
             ],
             'symfony/http-kernel' => [
                 'version' => '6.4.20',
                 'time' => null,
                 'advisories' => [
-                    'PKSA-0004' => ['title' => 'Kernel advisory', 'link' => 'https://example.com/4', 'cve' => 'CVE-2099-0004'],
+                    'PKSA-0004' => ['title' => 'Kernel advisory', 'link' => 'https://example.com/4', 'cve' => 'CVE-2099-0004', 'severity' => 'critical'],
                 ],
             ],
         ], $this->checker()->check(self::LOCK));
@@ -305,13 +308,14 @@ class PackagistCheckerTest extends TestCase
                 ]),
                 // v10.0.0 is installed, so this one does not apply
                 $this->advisory('PKSA-0002', 'Framework advisory for older versions', '<10.0.0', 'CVE-2099-0002'),
-                $this->advisory('PKSA-0003', 'Framework advisory without a CVE', '<11.0.0', null, null),
+                $this->advisory('PKSA-0003', 'Framework advisory without a CVE', '<11.0.0', null, null, severity: 'MODERATE'),
             ],
             'symfony/http-kernel' => [
-                $this->advisory('PKSA-0004', 'Kernel advisory', '>=6.4.0,<6.4.21', 'CVE-2099-0004', 'https://example.com/4'),
+                $this->advisory('PKSA-0004', 'Kernel advisory', '>=6.4.0,<6.4.21', 'CVE-2099-0004', 'https://example.com/4', severity: 'critical'),
             ],
             'phpunit/phpunit' => [
-                $this->advisory('PKSA-0005', 'Dev dependency advisory', '<9.6.0', 'CVE-2099-0005', 'https://example.com/5'),
+                // about 7% of Packagist's advisories have no severity
+                $this->advisory('PKSA-0005', 'Dev dependency advisory', '<9.6.0', 'CVE-2099-0005', 'https://example.com/5', severity: null),
             ],
             // a branch install (dev-main) never matches a version range, as in composer audit
             'league/commonmark' => [
@@ -331,6 +335,7 @@ class PackagistCheckerTest extends TestCase
         ?string $link = 'https://example.com',
         ?string $remoteId = null,
         array $sources = [],
+        ?string $severity = 'high',
     ): array {
         return [
             'advisoryId' => $id,
@@ -343,7 +348,7 @@ class PackagistCheckerTest extends TestCase
             'source' => 'GitHub',
             'reportedAt' => '2099-01-01 00:00:00',
             'composerRepository' => 'https://packagist.org',
-            'severity' => 'high',
+            'severity' => $severity,
             'sources' => $sources,
         ];
     }

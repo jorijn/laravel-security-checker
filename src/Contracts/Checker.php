@@ -19,10 +19,15 @@ use Jorijn\LaravelSecurityChecker\Exceptions\CheckFailedException;
  *                     'title' => 'Description of the vulnerability',
  *                     'link' => 'https://...',  // '' when unknown
  *                     'cve' => 'CVE-2024-1234', // null when the advisory has no CVE
+ *                     'severity' => 'high',     // optional (since 4.1): low, medium, high,
+ *                                               // critical, or null when unknown
  *                 ],
  *             ],
  *         ],
  *     ]
+ *
+ * "severity" is optional, so drivers written for 4.0 keep working; consumers (including views
+ * that users may have published) must read it as `$advisory['severity'] ?? null`.
  *
  * Only packages with at least one reported advisory are listed. An empty array means the check
  * ran and found nothing; a check that could not run must throw instead, never return [].
@@ -36,7 +41,7 @@ interface Checker
      * @return array<string, array{
      *     version: string,
      *     time: ?string,
-     *     advisories: array<string, array{title: string, link: string, cve: ?string}>
+     *     advisories: array<string, array{title: string, link: string, cve: ?string, severity?: ?string}>
      * }>
      *
      * @throws CheckFailedException When the check could not run, e.g. the advisory source is unreachable

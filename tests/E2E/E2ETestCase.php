@@ -149,6 +149,7 @@ abstract class E2ETestCase extends TestCase
             'LCS_DRIVER' => false,
             'LCS_NOTIFY_ON_FAILURE' => false,
             'LCS_PACKAGIST_URL' => false,
+            'LCS_MINIMUM_SEVERITY' => false,
         ];
     }
 
@@ -401,7 +402,8 @@ abstract class E2ETestCase extends TestCase
                 'source' => 'FriendsOfPHP/security-advisories',
                 'reportedAt' => '2099-01-01 00:00:00',
                 'composerRepository' => 'https://packagist.org',
-                'severity' => null,
+                // Optional in the fixtures; most FriendsOfPHP advisories have none on Packagist either.
+                'severity' => $advisory['severity'] ?? null,
                 'sources' => [['name' => 'FriendsOfPHP/security-advisories', 'remoteId' => $package.'/'.$file->getFilename()]],
             ];
         }

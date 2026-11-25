@@ -9,6 +9,7 @@ use Composer\Semver\VersionParser;
 use Jorijn\LaravelSecurityChecker\Contracts\AdvisorySource;
 use Jorijn\LaravelSecurityChecker\Contracts\Checker;
 use Jorijn\LaravelSecurityChecker\LockFile;
+use Jorijn\LaravelSecurityChecker\Severity;
 use UnexpectedValueException;
 
 /**
@@ -57,6 +58,7 @@ class PackagistChecker implements Checker
                     'title' => $this->string($advisory['title'] ?? null) ?? $id,
                     'link' => $this->string($advisory['link'] ?? null) ?? '',
                     'cve' => $this->string($advisory['cve'] ?? null),
+                    'severity' => Severity::normalize($advisory['severity'] ?? null),
                 ];
             }
 

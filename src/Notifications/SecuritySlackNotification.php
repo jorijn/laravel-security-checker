@@ -93,6 +93,10 @@ class SecuritySlackNotification extends Notification
                 foreach ($issues[ 'advisories' ] as $issue => $details) {
                     $content .= ' * ';
 
+                    if (!empty($details[ 'severity' ])) {
+                        $content .= '['.$details[ 'severity' ].'] ';
+                    }
+
                     if ($details[ 'cve' ]) {
                         $content .= $details[ 'cve' ].' ';
                     }

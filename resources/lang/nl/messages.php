@@ -15,6 +15,7 @@ return [
     'title' => 'Titel',
     'view' => 'Bekijken',
     'cve' => 'CVE',
+    'severity' => 'Ernst',
     'information' => 'Informatie',
     'no_recipients_configured' => 'Er zijn nog geen ontvangers geconfigureerd!',
     'body_no_vulnerabilities' => 'Het lijkt erop dat er geen pakketten zijn met bekende kwetsbaarheden. Lees [hier](https://github.com/jorijn/laravel-security-checker#configuration) hoe je dit bericht uit kunt schakelen.',

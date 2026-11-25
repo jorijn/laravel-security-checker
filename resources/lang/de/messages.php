@@ -15,6 +15,7 @@ return [
     'title' => 'Titel',
     'view' => 'Ansehen',
     'cve' => 'CVE',
+    'severity' => 'Schweregrad',
     'information' => 'Information',
     'no_recipients_configured' => 'Es wurden noch keine Empfänger konfiguriert!',
     'body_no_vulnerabilities' => 'Es scheint, dass keine Pakete irgendwelche bekannten Schwachstellen haben. [Hier](https://github.com/jorijn/laravel-security-checker#configuration) können Sie mehr über die Deaktivierung dieser Nachricht lesen.',
