@@ -60,9 +60,10 @@ jobs:
       - name: Install dependencies
         run: |
           if [ "${{ matrix.variant }}" = "laravel-14-dev" ]; then
-            # laravel/framework's dev-master has no 14.x branch alias yet, so name it directly,
-            # together with the Testbench branch that targets it.
-            composer require --dev "laravel/framework:dev-master" "orchestra/testbench:12.x-dev" --no-update
+            # laravel/framework's dev-master has no 14.x branch alias yet. The inline alias makes
+            # it (and the illuminate/* packages it replaces) count as 14.0.0, so it satisfies this
+            # package's ^14.0 constraints; Testbench 12.x-dev is the branch that targets it.
+            composer require --dev "laravel/framework:dev-master as 14.0.0" "orchestra/testbench:12.x-dev" --no-update
           else
             composer require "illuminate/contracts=${{ matrix.laravel }}" --prefer-stable --no-update
           fi
