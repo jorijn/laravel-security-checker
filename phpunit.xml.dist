@@ -7,6 +7,8 @@
     <testsuites>
         <testsuite name=":vendor Test Suite">
             <directory>tests</directory>
+            <!-- the e2e suite needs a prepared Laravel app, see phpunit.e2e.xml.dist -->
+            <exclude>tests/E2E</exclude>
         </testsuite>
     </testsuites>
     <coverage>

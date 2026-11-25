@@ -3,6 +3,11 @@ name: tests
 on:
   push:
   pull_request:
+  # A weekly run catches breakage from new upstream releases (Laravel, PHPUnit, PHP itself)
+  # even when nothing is pushed here. Without it CI stayed silent from 6 October onwards.
+  schedule:
+    - cron: '17 5 * * 1' # Mondays 05:17 UTC; an odd minute avoids GitHub's top-of-hour queue
+  workflow_dispatch:
 
 jobs:
   tests:
@@ -11,11 +16,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [8.2, 8.3, 8.4, 8.5]
+        php: ['8.2', '8.3', '8.4', '8.5', '8.6']
         laravel: ['12.*', '13.*']
         exclude:
           - laravel: 13.*
-            php: 8.2
+            php: '8.2'
+
+    # PHP 8.6 was released on 19 November 2026; not every dependency declares support yet.
+    # Its jobs report failures without blocking the workflow. Drop this once 8.6 is green.
+    continue-on-error: ${{ matrix.php == '8.6' }}
 
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
@@ -37,3 +46,45 @@ jobs:
 
       - name: Execute tests
         run: vendor/bin/phpunit --configuration=phpunit.xml.dist
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest and newest supported PHP for each Laravel major: the e2e suite is slower,
+        # so it covers the edges instead of the full matrix above.
+        include:
+          - laravel: '12'
+            php: '8.2'
+          - laravel: '12'
+            php: '8.5'
+          - laravel: '13'
+            php: '8.3'
+          - laravel: '13'
+            php: '8.5'
+
+    name: E2E - PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, json, openssl
+          coverage: none
+
+      - name: Install package dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Create Laravel ${{ matrix.laravel }} app with this package
+        run: tests/E2E/bin/create-app.sh ${{ matrix.laravel }} "$RUNNER_TEMP/app"
+
+      - name: Execute e2e tests
+        run: vendor/bin/phpunit --configuration=phpunit.e2e.xml.dist
+        env:
+          E2E_APP_PATH: ${{ runner.temp }}/app

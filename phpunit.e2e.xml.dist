@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    End-to-end suite: runs the real artisan commands inside a real Laravel app.
+    Create the app first, then run:
+
+        tests/E2E/bin/create-app.sh 13 /tmp/e2e-app
+        E2E_APP_PATH=/tmp/e2e-app vendor/bin/phpunit -c phpunit.e2e.xml.dist
+
+    Kept out of phpunit.xml.dist on purpose: it needs a prepared app and takes longer,
+    so a plain `composer test` stays fast and self-contained.
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         displayDetailsOnIncompleteTests="true">
+    <testsuites>
+        <testsuite name="e2e">
+            <directory>tests/E2E</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

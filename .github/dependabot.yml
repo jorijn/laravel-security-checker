@@ -4,3 +4,9 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+  # Keeps actions/checkout and shivammathur/setup-php current, so a deprecated action
+  # version never silently breaks the scheduled runs.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
