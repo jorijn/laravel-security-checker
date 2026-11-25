@@ -51,8 +51,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // translations
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-security-checker');
+        // langPath() follows the app's own layout: lang/ since Laravel 9, or resources/lang when an
+        // older app still has that directory. Publishing to resource_path('lang') instead created
+        // resources/lang in modern apps, which makes Laravel switch its whole language path there
+        // and silently lose the app's own translations in lang/.
         $this->publishes([
-            __DIR__.'/../resources/lang' => resource_path('lang/vendor/laravel-security-checker'),
+            __DIR__.'/../resources/lang' => $this->app->langPath('vendor/laravel-security-checker'),
         ], 'translations');
 
         if ($this->app->runningInConsole()) {
