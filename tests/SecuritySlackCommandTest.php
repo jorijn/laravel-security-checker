@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class SecuritySlackCommandTest extends TestCase
 {
@@ -107,5 +108,29 @@ class SecuritySlackCommandTest extends TestCase
         );
 
         $this->artisan('security-check:slack')->assertExitCode(0);
+    }
+
+    /**
+     * Same normalization as the mail command: "1", "yes" and "on" from .env count as true.
+     */
+    #[TestWith(['1'])]
+    #[TestWith(['yes'])]
+    #[TestWith(['on'])]
+    #[TestWith([true])]
+    public function testNotifyWithoutVulnerabilitiesAcceptsTruthyValues(mixed $value): void
+    {
+        Notification::fake();
+
+        $this->bindPassingSecurityChecker();
+
+        Config::set(
+            'laravel-security-checker.slack_webhook_url',
+            'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
+        );
+        Config::set('laravel-security-checker.notify_even_without_vulnerabilities', $value);
+
+        $this->artisan('security-check:slack')->assertExitCode(0);
+
+        Notification::assertSentTo(new AnonymousNotifiable, SecuritySlackNotification::class);
     }
 }

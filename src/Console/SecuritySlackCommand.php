@@ -59,8 +59,7 @@ class SecuritySlackCommand extends Command
         $vulnerabilities = $this->checkForVulnerabilities($composerLock);
 
         // cancel execution here if user does not want to be notified when there are 0 vulns.
-        $proceed = config('laravel-security-checker.notify_even_without_vulnerabilities', false);
-        if (count($vulnerabilities) === 0 && $proceed !== true) {
+        if (count($vulnerabilities) === 0 && !$this->notifyWithoutVulnerabilities()) {
             Log::info('no vulnerabilities were found, not sending a slack notification');
 
             return 0;
