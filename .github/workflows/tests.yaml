@@ -63,7 +63,11 @@ jobs:
           composer update --prefer-dist --no-interaction --no-progress
 
       - name: Show the resolved Laravel and Symfony versions
-        run: composer show laravel/framework symfony/console | grep -E '^(name|versions)'
+        # `composer show` takes a single package name, hence the loop.
+        run: |
+          for package in laravel/framework symfony/console; do
+            composer show "$package" | grep -E '^(name|versions)'
+          done
 
       - name: Execute tests
         run: vendor/bin/phpunit --configuration=phpunit.xml.dist
