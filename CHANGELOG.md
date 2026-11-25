@@ -1,5 +1,28 @@
 # Changelog for Laravel Security Checker
 
+## [4.0.0](https://github.com/jorijn/laravel-security-checker/compare/v3.1.1...v4.0.0) (2026-11-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* exit with code 2 and send a "the security check could not run" alert by mail or Slack when the check itself fails (`LCS_NOTIFY_ON_FAILURE=false` turns the alert off)
+* require PHP 8.3 or newer; `enlightn/security-checker` is no longer installed and only needed for the deprecated `enlightn` driver
+* check against Packagist's security advisory database (the data `composer audit` uses) instead of FriendsOfPHP only, so far more vulnerabilities are reported; see [UPGRADING.md](https://github.com/jorijn/laravel-security-checker/blob/master/UPGRADING.md)
+
+### Features
+
+* add the `packagist-per-package` driver and custom drivers through `CheckerManager::extend()` ([c38037d](https://github.com/jorijn/laravel-security-checker/commit/c38037d16b1c135631b6a6a90b435cbebb96f09f))
+* allow advisories by their GitHub (`GHSA-...`) or Packagist (`PKSA-...`) advisory id ([c38037d](https://github.com/jorijn/laravel-security-checker/commit/c38037d16b1c135631b6a6a90b435cbebb96f09f))
+* allow installing on Laravel 14 ([c38037d](https://github.com/jorijn/laravel-security-checker/commit/c38037d16b1c135631b6a6a90b435cbebb96f09f))
+* check against Packagist's security advisory database (the data `composer audit` uses) instead of FriendsOfPHP only, so far more vulnerabilities are reported; see [UPGRADING.md](https://github.com/jorijn/laravel-security-checker/blob/master/UPGRADING.md) ([c38037d](https://github.com/jorijn/laravel-security-checker/commit/c38037d16b1c135631b6a6a90b435cbebb96f09f))
+* exit with code 2 and send a "the security check could not run" alert by mail or Slack when the check itself fails (`LCS_NOTIFY_ON_FAILURE=false` turns the alert off) ([c38037d](https://github.com/jorijn/laravel-security-checker/commit/c38037d16b1c135631b6a6a90b435cbebb96f09f))
+* require PHP 8.3 or newer; `enlightn/security-checker` is no longer installed and only needed for the deprecated `enlightn` driver ([c38037d](https://github.com/jorijn/laravel-security-checker/commit/c38037d16b1c135631b6a6a90b435cbebb96f09f))
+
+
+### Bug Fixes
+
+* show the number of packages in the Spanish translation ([c38037d](https://github.com/jorijn/laravel-security-checker/commit/c38037d16b1c135631b6a6a90b435cbebb96f09f))
+
 ## [3.1.1](https://github.com/jorijn/laravel-security-checker/compare/v3.1.0...v3.1.1) (2026-11-25)
 
 
