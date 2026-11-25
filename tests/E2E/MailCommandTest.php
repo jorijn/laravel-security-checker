@@ -2,6 +2,8 @@
 
 namespace Jorijn\LaravelSecurityChecker\Tests\E2E;
 
+use PHPUnit\Framework\Attributes\TestWith;
+
 /**
  * `php artisan security-check:email`: the mail as Laravel really renders and sends it.
  */
@@ -37,18 +39,16 @@ class MailCommandTest extends E2ETestCase
 
         $html = $this->mailHtml($this->sentMails()[0] ?? '');
 
-        // The view uses `{{ $information['cve'] or '' }}`. Blade dropped its "or" shorthand in
-        // Laravel 5.7, so PHP now evaluates a boolean `or` and the CVE column shows "1".
+        // The view used `{{ $information['cve'] or '' }}`. Blade dropped its "or" shorthand in
+        // Laravel 5.7, so PHP evaluated a boolean `or` and the CVE column showed "1".
         // Only leaf cells (no nested markup): the mail layout itself is built from nested tables.
         preg_match_all('/<td[^>]*>([^<]*)<\/td>/', $html, $m);
         $cells = array_map('trim', $m[1]);
         $this->assertContains('E2E fixture: framework advisory with a CVE', $cells, 'precondition: the table rendered');
 
-        $this->assertKnownBug('the mail shows "1" instead of the CVE code', function () use ($cells) {
-            $this->assertContains('CVE-2099-0001', $cells);
-            $this->assertContains('CVE-2099-0003', $cells);
-            $this->assertNotContains('1', $cells);
-        });
+        $this->assertContains('CVE-2099-0001', $cells);
+        $this->assertContains('CVE-2099-0003', $cells);
+        $this->assertNotContains('1', $cells);
     }
 
     public function testSendsNothingWithoutVulnerabilitiesByDefault(): void
@@ -80,24 +80,43 @@ class MailCommandTest extends E2ETestCase
     }
 
     /**
-     * `.env` values like "1", "yes" or "on" are common, and the README only says "true". The
-     * command compares with `!== true`, so anything env() does not cast to a real boolean is
-     * silently ignored and no all-clear mail is sent.
+     * `.env` values like "1", "yes" or "on" are common, and the README only said "true". The
+     * command used to compare with `!== true`, so anything env() does not cast to a real boolean
+     * was silently ignored and no all-clear mail was sent.
      */
-    public function testNotifyWithoutVulnerabilitiesAcceptsCommonTruthyValues(): void
+    #[TestWith(['1'])]
+    #[TestWith(['yes'])]
+    #[TestWith(['on'])]
+    public function testNotifyWithoutVulnerabilitiesAcceptsCommonTruthyValues(string $value): void
     {
         $this->useAdvisories('clean');
 
         $process = $this->artisan(['security-check:email'], [
             'LCS_MAIL_TO' => 'security@example.com',
-            'LCS_NOTIFY_WITHOUT_VULNERABILITIES' => '1',
+            'LCS_NOTIFY_WITHOUT_VULNERABILITIES' => $value,
         ]);
 
         $this->assertSame(0, $process->getExitCode());
+        $this->assertCount(1, $this->sentMails());
+    }
 
-        $this->assertKnownBug('LCS_NOTIFY_WITHOUT_VULNERABILITIES is ignored unless it is literally "true"', function () {
-            $this->assertCount(1, $this->sentMails());
-        });
+    /**
+     * The flip side of the fix above: falsy spellings must keep the default of sending nothing.
+     */
+    #[TestWith(['false'])]
+    #[TestWith(['0'])]
+    #[TestWith(['no'])]
+    public function testNotifyWithoutVulnerabilitiesIgnoresFalsyValues(string $value): void
+    {
+        $this->useAdvisories('clean');
+
+        $process = $this->artisan(['security-check:email'], [
+            'LCS_MAIL_TO' => 'security@example.com',
+            'LCS_NOTIFY_WITHOUT_VULNERABILITIES' => $value,
+        ]);
+
+        $this->assertSame(0, $process->getExitCode());
+        $this->assertSame([], $this->sentMails());
     }
 
     public function testFailsWithoutRecipients(): void
@@ -116,14 +135,12 @@ class MailCommandTest extends E2ETestCase
             'LCS_MAIL_TO' => 'security@example.com,ops@example.com',
         ]);
 
-        // The whole string is handed to Symfony Mailer as one address, which rejects it as
-        // invalid (RfcComplianceException): the command crashes and nobody is warned.
-        $this->assertKnownBug('a comma-separated LCS_MAIL_TO crashes the command', function () use ($process) {
-            $this->assertSame(0, $process->getExitCode(), $process->getOutput().$process->getErrorOutput());
-            $mails = $this->sentMails();
-            $this->assertCount(1, $mails);
-            $this->assertSame('security@example.com, ops@example.com', $this->mailHeader($mails[0], 'To'));
-        });
+        // The whole string used to be handed to Symfony Mailer as one address, which rejected it
+        // as invalid (RfcComplianceException): the command crashed and nobody was warned.
+        $this->assertSame(0, $process->getExitCode(), $process->getOutput().$process->getErrorOutput());
+        $mails = $this->sentMails();
+        $this->assertCount(1, $mails);
+        $this->assertSame('security@example.com, ops@example.com', $this->mailHeader($mails[0], 'To'));
     }
 
     public function testUnreachableAdvisorySourceFailsLoudlyAndSendsNoMail(): void

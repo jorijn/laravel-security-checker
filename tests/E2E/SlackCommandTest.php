@@ -71,10 +71,8 @@ class SlackCommandTest extends E2ETestCase
             'LCS_NOTIFY_WITHOUT_VULNERABILITIES' => '1',
         ]);
 
-        // Same `!== true` comparison as the mail command, see MailCommandTest.
-        $this->assertKnownBug('LCS_NOTIFY_WITHOUT_VULNERABILITIES is ignored unless it is literally "true"', function () {
-            $this->assertCount(1, $this->slackRequests());
-        });
+        // Used the same `!== true` comparison as the mail command, see MailCommandTest.
+        $this->assertCount(1, $this->slackRequests());
     }
 
     public function testFailsWithoutAWebhook(): void

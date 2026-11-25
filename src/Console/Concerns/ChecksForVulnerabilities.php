@@ -41,6 +41,24 @@ trait ChecksForVulnerabilities
     }
 
     /**
+     * Whether a report should also be sent when no vulnerabilities were found.
+     *
+     * env() only casts the literal strings "true"/"(true)" to a boolean, so a strict `=== true`
+     * check silently ignored common .env values like "1", "yes" or "on". FILTER_VALIDATE_BOOLEAN
+     * accepts those, and still treats anything unrecognised as false: an unexpected value
+     * should never start spamming all-clear reports.
+     *
+     * @return bool
+     */
+    protected function notifyWithoutVulnerabilities(): bool
+    {
+        return filter_var(
+            config('laravel-security-checker.notify_even_without_vulnerabilities', false),
+            FILTER_VALIDATE_BOOLEAN
+        );
+    }
+
+    /**
      * Returns the allow list as a clean list of strings, whatever shape the config value has.
      *
      * Enlightn type-hints the allow list as `array`, so passing anything else crashes the whole

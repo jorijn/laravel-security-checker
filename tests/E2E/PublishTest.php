@@ -84,9 +84,9 @@ class PublishTest extends E2ETestCase
     }
 
     /**
-     * The package publishes to resource_path('lang/...'). Since Laravel 9 an app's translations
-     * live in lang/, and Laravel only falls back to resources/lang when that directory exists.
-     * So publishing creates resources/lang and the app silently loses its own translations.
+     * The package used to publish to resource_path('lang/...'). Since Laravel 9 an app's
+     * translations live in lang/, and Laravel switches to resources/lang as soon as that directory
+     * exists. So publishing created resources/lang and the app silently lost its own translations.
      */
     public function testPublishingTranslationsKeepsTheAppsLanguagePath(): void
     {
@@ -94,11 +94,9 @@ class PublishTest extends E2ETestCase
 
         $this->publish('translations');
 
-        $this->assertKnownBug('publishing the translations changes the app\'s language path', function () {
-            $this->assertSame('translated by the app', $this->translate('e2e.marker'));
-            $this->assertDirectoryDoesNotExist(static::$appPath.'/resources/lang');
-            $this->assertDirectoryExists(static::$appPath.'/lang/vendor/laravel-security-checker');
-        });
+        $this->assertSame('translated by the app', $this->translate('e2e.marker'));
+        $this->assertDirectoryDoesNotExist(static::$appPath.'/resources/lang');
+        $this->assertDirectoryExists(static::$appPath.'/lang/vendor/laravel-security-checker');
     }
 
     private function publish(string $tag): void

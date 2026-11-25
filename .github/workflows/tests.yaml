@@ -22,10 +22,6 @@ jobs:
           - laravel: 13.*
             php: '8.2'
 
-    # PHP 8.6 was released on 19 November 2026; not every dependency declares support yet.
-    # Its jobs report failures without blocking the workflow. Drop this once 8.6 is green.
-    continue-on-error: ${{ matrix.php == '8.6' }}
-
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
     steps:
