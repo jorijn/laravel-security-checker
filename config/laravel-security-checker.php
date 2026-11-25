@@ -70,8 +70,9 @@ return [
      |--------------------------------------------------------------------------
      |
      | When the check itself fails (for example because Packagist cannot be
-     | reached), security-check:email and security-check:slack send a "check
-     | could not run" message, so a broken check never looks like a quiet week.
+     | reached), security-check:email, :slack, :teams and :webhook send a
+     | "check could not run" message, so a broken check never looks like a
+     | quiet week.
      | security-check:now exits with code 2 in that case.
      |
      */
@@ -88,6 +89,35 @@ return [
      */
 
     'slack_webhook_url' => env('LCS_SLACK_WEBHOOK', null),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Laravel Security Checker — Microsoft Teams
+     |--------------------------------------------------------------------------
+     |
+     | The Workflows webhook URL security-check:teams posts to. Create one in
+     | Teams with the Workflows app: "Send webhook alerts to a channel".
+     |
+     */
+
+    'teams_webhook_url' => env('LCS_TEAMS_WEBHOOK'),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Laravel Security Checker — Webhook
+     |--------------------------------------------------------------------------
+     |
+     | security-check:webhook POSTs the report as JSON (the same document as
+     | security-check:now --format=json) to this URL. With a secret, every
+     | request carries an X-Signature-256 header: "sha256=" followed by the
+     | HMAC-SHA256 of the body, so the receiver can verify where it came from.
+     |
+     */
+
+    'webhook' => [
+        'url' => env('LCS_WEBHOOK_URL'),
+        'secret' => env('LCS_WEBHOOK_SECRET'),
+    ],
     /*
      |--------------------------------------------------------------------------
      | Laravel Security Checker — Temp dir

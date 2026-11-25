@@ -28,7 +28,17 @@ class JsonFormatter implements FormatterInterface
      */
     public function displayResults(OutputInterface $output, $lockFilePath, array $vulnerabilities, array $ignored = [])
     {
-        $this->write($output, [
+        $this->write($output, $this->document($lockFilePath, $vulnerabilities, $ignored));
+    }
+
+    /**
+     * The report document, also the body of security-check:webhook.
+     *
+     * @return array<string, mixed>
+     */
+    public function document(string $lockFilePath, array $vulnerabilities, array $ignored = []): array
+    {
+        return [
             'lock_file' => $this->path($lockFilePath),
             'vulnerable_package_count' => count($vulnerabilities),
             'advisory_count' => array_sum(array_map(
@@ -40,7 +50,7 @@ class JsonFormatter implements FormatterInterface
             'packages' => (object) $vulnerabilities,
             // Same shape as packages, plus "allowed_by" and "reason" per advisory.
             'ignored' => (object) $ignored,
-        ]);
+        ];
     }
 
     /**
@@ -51,15 +61,28 @@ class JsonFormatter implements FormatterInterface
      */
     public function displayError(OutputInterface $output, string $lockFilePath, string $reason): void
     {
-        $this->write($output, [
+        $this->write($output, $this->errorDocument($lockFilePath, $reason));
+    }
+
+    /**
+     * @return array{lock_file: string, error: string}
+     */
+    public function errorDocument(string $lockFilePath, string $reason): array
+    {
+        return [
             'lock_file' => $this->path($lockFilePath),
             'error' => $reason,
-        ]);
+        ];
+    }
+
+    public function encode(array $document): string
+    {
+        return json_encode($document, self::FLAGS);
     }
 
     private function write(OutputInterface $output, array $document): void
     {
-        $output->writeln(json_encode($document, self::FLAGS), OutputInterface::OUTPUT_RAW);
+        $output->writeln($this->encode($document), OutputInterface::OUTPUT_RAW);
     }
 
     /**
