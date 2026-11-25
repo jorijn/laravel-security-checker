@@ -2,7 +2,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
 [![Total Downloads](https://img.shields.io/packagist/dt/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
 [![License](https://img.shields.io/github/license/jorijn/laravel-security-checker.svg)](https://packagist.org/packages/jorijn/laravel-security-checker)
-![Tests](https://github.com/Jorijn/laravel-security-checker/workflows/tests/badge.svg)
+[![Tests](https://github.com/jorijn/laravel-security-checker/actions/workflows/tests.yaml/badge.svg?branch=master&event=push)](https://github.com/jorijn/laravel-security-checker/actions/workflows/tests.yaml?query=branch%3Amaster+event%3Apush)
 
 This package checks your application's `composer.lock` for packages with known security vulnerabilities, using
 [Packagist's security advisory database](https://packagist.org/apidoc#list-security-advisories): the same data
