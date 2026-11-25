@@ -2,11 +2,12 @@
 
 namespace Jorijn\LaravelSecurityChecker\Console;
 
-use Enlightn\SecurityChecker\SecurityChecker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Jorijn\LaravelSecurityChecker\Console\Concerns\ChecksForVulnerabilities;
+use Jorijn\LaravelSecurityChecker\Exceptions\CheckFailedException;
+use Jorijn\LaravelSecurityChecker\Notifications\SecurityCheckFailedSlackNotification;
 use Jorijn\LaravelSecurityChecker\Notifications\SecuritySlackNotification;
 
 class SecuritySlackCommand extends Command
@@ -24,23 +25,6 @@ class SecuritySlackCommand extends Command
     protected $description = 'Send vulnerabilities to a Slack channel.';
 
     /**
-     * @var SecurityChecker
-     */
-    protected $checker;
-
-    /**
-     * SecurityCommand constructor.
-     *
-     * @param SecurityChecker $checker
-     */
-    public function __construct(SecurityChecker $checker)
-    {
-        parent::__construct();
-
-        $this->checker = $checker;
-    }
-
-    /**
      * Execute the command
      */
     public function handle()
@@ -56,7 +40,12 @@ class SecuritySlackCommand extends Command
 
         // and feed it into the SecurityChecker
         Log::debug('about to check for vulnerabilities');
-        $vulnerabilities = $this->checkForVulnerabilities($composerLock);
+
+        try {
+            $vulnerabilities = $this->checkForVulnerabilities($composerLock);
+        } catch (CheckFailedException $e) {
+            return $this->handleFailedCheck($e, $composerLock);
+        }
 
         // cancel execution here if user does not want to be notified when there are 0 vulns.
         if (count($vulnerabilities) === 0 && !$this->notifyWithoutVulnerabilities()) {
@@ -68,5 +57,18 @@ class SecuritySlackCommand extends Command
         Log::warning('vulnerabilities were found, sending slack notification to configured hook');
         Notification::route('slack', config('laravel-security-checker.slack_webhook_url', null))
             ->notify(new SecuritySlackNotification($vulnerabilities, realpath($composerLock)));
+
+        return 0;
+    }
+
+    /**
+     * Posts the "security check could not run" alert to the configured Slack webhook.
+     */
+    protected function notifyAboutFailedCheck(CheckFailedException $e, string $composerLock): void
+    {
+        Notification::route('slack', config('laravel-security-checker.slack_webhook_url'))
+            ->notify(new SecurityCheckFailedSlackNotification($e->getMessage(), $composerLock));
+
+        Log::warning('the security check could not run, alert sent to the configured slack hook');
     }
 }

@@ -3,28 +3,113 @@
 namespace Jorijn\LaravelSecurityChecker\Console\Concerns;
 
 use Illuminate\Support\Facades\Log;
+use Jorijn\LaravelSecurityChecker\CheckerManager;
+use Jorijn\LaravelSecurityChecker\Contracts\Checker;
+use Jorijn\LaravelSecurityChecker\Exceptions\CheckFailedException;
+use Throwable;
 
 /**
- * Shared by all security-check commands so the configured checker options are
- * normalized in exactly one place before they reach the Enlightn SecurityChecker.
- *
- * Expects the using class to have a `$checker` property holding the SecurityChecker.
+ * Shared by all security-check commands: the configured checker options are normalized in
+ * exactly one place, and a check that could not run is handled the same way everywhere.
  */
 trait ChecksForVulnerabilities
 {
     /**
-     * Run the security checker against the given composer.lock using the configured options.
+     * Exit code when vulnerabilities were found (unchanged since 1.x).
+     */
+    public const VULNERABILITIES_FOUND = 1;
+
+    /**
+     * Exit code when the check itself could not run, e.g. Packagist was unreachable.
      *
-     * @param string $composerLock
-     * @return array
+     * Before 4.0 such failures surfaced as an uncaught exception with exit code 1, which a
+     * cron wrapper or CI step could not tell apart from "vulnerabilities found".
+     */
+    public const CHECK_FAILED = 2;
+
+    /**
+     * Run the configured checker against the given composer.lock using the configured options.
+     *
+     * @return array<string, array<string, mixed>> The report, in the shape described on Checker
+     *
+     * @throws CheckFailedException
      */
     protected function checkForVulnerabilities(string $composerLock): array
     {
-        return $this->checker->check(
-            $composerLock,
-            $this->excludeDevDependencies(),
-            $this->allowedVulnerabilities()
-        );
+        $this->warnAboutDeprecatedDriver();
+
+        try {
+            return $this->laravel->make(Checker::class)->check(
+                $composerLock,
+                $this->excludeDevDependencies(),
+                $this->allowedVulnerabilities()
+            );
+        } catch (CheckFailedException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            // Custom drivers (or a bug) may throw anything; whatever it is, the check did not run
+            // and must be reported as such, never as "no vulnerabilities".
+            throw CheckFailedException::because($e->getMessage(), $e);
+        }
+    }
+
+    /**
+     * Logs and prints why the check could not run, alerts the configured channel and returns
+     * the exit code. Alerting is the command's job, see notifyAboutFailedCheck().
+     */
+    protected function handleFailedCheck(CheckFailedException $e, string $composerLock): int
+    {
+        Log::error('the security check could not run: '.$e->getMessage(), ['exception' => $e]);
+
+        $this->error('The security check could not run: '.$e->getMessage());
+        $this->error('This does not mean that there are no vulnerabilities: nothing was checked.');
+
+        if ($this->notifyOnFailure()) {
+            try {
+                $this->notifyAboutFailedCheck($e, $composerLock);
+            } catch (Throwable $notifyError) {
+                // The alert itself failing must not hide the original problem or the exit code.
+                Log::error('could not send the "security check could not run" alert: '.$notifyError->getMessage(), [
+                    'exception' => $notifyError,
+                ]);
+                $this->error('Sending the alert about this failed as well: '.$notifyError->getMessage());
+            }
+        }
+
+        return self::CHECK_FAILED;
+    }
+
+    /**
+     * Sends the "security check could not run" alert. Commands that notify someone override this.
+     */
+    protected function notifyAboutFailedCheck(CheckFailedException $e, string $composerLock): void
+    {
+    }
+
+    /**
+     * Whether a failed check sends an alert through the command's channel (default: yes).
+     */
+    protected function notifyOnFailure(): bool
+    {
+        // An unrecognised value keeps the safe default: rather one alert too many than a silent failure.
+        return filter_var(
+            config('laravel-security-checker.notify_on_failure', true),
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        ) ?? true;
+    }
+
+    private function warnAboutDeprecatedDriver(): void
+    {
+        if ($this->laravel->make(CheckerManager::class)->getDefaultDriver() !== 'enlightn') {
+            return;
+        }
+
+        $message = 'The "enlightn" driver of laravel-security-checker is deprecated and will be removed in 5.0. '
+            .'Remove LCS_DRIVER (or set it to "packagist") to use the Packagist advisory database.';
+
+        Log::warning($message);
+        $this->warn($message);
     }
 
     /**
@@ -61,9 +146,10 @@ trait ChecksForVulnerabilities
     /**
      * Returns the allow list as a clean list of strings, whatever shape the config value has.
      *
-     * Enlightn type-hints the allow list as `array`, so passing anything else crashes the whole
-     * check. A malformed allow list is therefore ignored (with a warning) instead: reporting
-     * too many vulnerabilities is a much safer failure mode than running no check at all.
+     * Drivers expect a list of strings (Enlightn even type-hints `array`, so anything else
+     * crashed the whole check). A malformed allow list is therefore ignored (with a warning)
+     * instead: reporting too many vulnerabilities is a much safer failure mode than running
+     * no check at all.
      *
      * @return array<int, string>
      */
@@ -97,8 +183,8 @@ trait ChecksForVulnerabilities
             return [];
         }
 
-        // Enlightn matches entries with a strict in_array(), so stray whitespace or non-string
-        // values would silently never match anything.
+        // Entries are matched exactly, so stray whitespace or non-string values would silently
+        // never match anything.
         $allowList = array_map(fn ($entry) => is_string($entry) ? trim($entry) : $entry, $allowList);
 
         return array_values(array_filter($allowList, fn ($entry) => is_string($entry) && $entry !== ''));

@@ -3,6 +3,44 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | Laravel Security Checker — Driver
+    |--------------------------------------------------------------------------
+    |
+    | Where the advisories come from and how composer.lock is matched against them.
+    |
+    |   "packagist"             (default) Downloads the full security advisory feed from
+    |                           Packagist, the source `composer audit` uses, and matches
+    |                           versions locally. The list of packages your application uses
+    |                           never leaves the server.
+    |   "packagist-per-package" Asks Packagist about your installed packages only. Smaller
+    |                           downloads, but Packagist learns which packages you use,
+    |                           including the names of private packages.
+    |   "enlightn"              Deprecated, removed in 5.0. The 3.x behaviour: the FriendsOfPHP
+    |                           database through enlightn/security-checker, which you then need
+    |                           to require yourself. It misses most advisories Packagist knows.
+    |
+    */
+
+    'driver' => env('LCS_DRIVER', 'packagist'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Laravel Security Checker — Packagist
+    |--------------------------------------------------------------------------
+    |
+    | Settings for both Packagist drivers. The URL only needs changing for a
+    | mirror that serves the same /api/security-advisories/ endpoint.
+    | The timeout (in seconds) applies to each request.
+    |
+    */
+
+    'packagist' => [
+        'url' => env('LCS_PACKAGIST_URL', 'https://packagist.org'),
+        'timeout' => env('LCS_PACKAGIST_TIMEOUT', 30),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Laravel Security Checker — Recipients
     |--------------------------------------------------------------------------
     |
@@ -28,6 +66,20 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Laravel Security Checker — Alert when the check could not run
+     |--------------------------------------------------------------------------
+     |
+     | When the check itself fails (for example because Packagist cannot be
+     | reached), security-check:email and security-check:slack send a "check
+     | could not run" message, so a broken check never looks like a quiet week.
+     | security-check:now exits with code 2 in that case.
+     |
+     */
+
+    'notify_on_failure' => env('LCS_NOTIFY_ON_FAILURE', true),
+
+    /*
+     |--------------------------------------------------------------------------
      | Laravel Security Checker — Slack Webhook URL
      |--------------------------------------------------------------------------
      |
@@ -41,6 +93,7 @@ return [
      | Laravel Security Checker — Temp dir
      |--------------------------------------------------------------------------
      |
+     | Only used by the deprecated "enlightn" driver.
      | Decides where enlightn/security-checker will place its temp files.
      | Useful when using this package with multiple users/permissions on a single server.
      | See: https://github.com/enlightn/security-checker/issues/17
@@ -70,10 +123,13 @@ return [
      |
      | Vulnerabilities that should not be reported, identified by their CVE
      | identifier or by their exact advisory title (matching is case-sensitive).
+     | With the Packagist drivers, the GitHub advisory id (GHSA-...) or the
+     | Packagist advisory id (PKSA-...) work as well, which helps for advisories
+     | without a CVE.
      | Note that an allowed title is ignored for every package that uses it.
      |
      | In your .env file, use a single-quoted JSON array:
-     |   LCS_ALLOW_LIST='["CVE-2024-1234","Example vulnerability title"]'
+     |   LCS_ALLOW_LIST='["CVE-2024-1234","GHSA-xxxx-xxxx-xxxx","Example vulnerability title"]'
      |
      | When publishing this file you can use a regular PHP array instead:
      |   'allow_list' => ['CVE-2024-1234', 'Example vulnerability title'],
