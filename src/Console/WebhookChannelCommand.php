@@ -82,12 +82,22 @@ abstract class WebhookChannelCommand extends Command
 
         if (count($report) === 0 && !$this->notifyWithoutVulnerabilities()) {
             Log::info(sprintf('no vulnerabilities were found, not posting via %s', $this->channelName()));
+            $this->rememberFindings($report, $composerLock);
+
+            return self::SUCCESS;
+        }
+
+        $newFindings = $this->newFindings($report, $composerLock);
+
+        if (count($report) > 0 && count($newFindings) === 0) {
+            Log::info(sprintf('no new vulnerabilities since the last run, not posting via %s', $this->channelName()));
+            $this->rememberFindings($report, $composerLock);
 
             return self::SUCCESS;
         }
 
         try {
-            $this->post($url, $this->reportPayload($report, $composerLock));
+            $this->post($url, $this->reportPayload($newFindings, $composerLock));
         } catch (Throwable $e) {
             $reason = sprintf('the security report via %s: %s', $this->channelName(), $e->getMessage());
 
@@ -98,6 +108,7 @@ abstract class WebhookChannelCommand extends Command
         }
 
         Log::warning(sprintf('security report posted via %s', $this->channelName()));
+        $this->rememberFindings($report, $composerLock);
 
         return self::SUCCESS;
     }

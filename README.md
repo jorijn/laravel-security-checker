@@ -69,6 +69,24 @@ LCS_NOTIFY_WITHOUT_VULNERABILITIES=true
 
 Values like `1`, `yes` and `on` work as well. This setting also applies to Slack, Teams and the webhook.
 
+#### Only new findings
+A weekly mail that repeats the same vulnerability you cannot fix yet gets ignored, and then the new one gets missed too.
+To only be told about what is new since the previous run, add:
+
+```
+LCS_NOTIFY_ONLY_NEW=true
+```
+
+Keep in mind:
+* This applies to `security-check:email`, `:slack`, `:teams` and `:webhook`, each with its own memory, so every channel
+  hears about a vulnerability once. `security-check:now` always shows everything.
+* The report then only contains the new findings, and nothing is sent when there are none.
+* A finding is a package plus an advisory. One that disappears (say, after an update) and comes back later is new again.
+* Which findings were reported is kept in your application's cache. If that is cleared, or on the first run, everything is
+  reported once more. To keep it in another cache store (for example one that a deploy does not clear), set
+  `LCS_STATE_CACHE_STORE` to the name of that store in `config/cache.php`.
+* When a report cannot be delivered, its findings stay new for the next run.
+
 #### When the check itself cannot run
 If the check cannot run, for example because Packagist cannot be reached or `composer.lock` is missing,
 `security-check:email`, `:slack`, `:teams` and `:webhook` send a "the security check could not run" message instead, so a broken
@@ -110,8 +128,9 @@ LCS_WEBHOOK_URL=https://example.com/hooks/security
 LCS_WEBHOOK_SECRET=a-long-random-string
 ```
 
-The body is the same document as the [JSON output](#json-output), with two extra keys: `event` (`report`, or `check_failed`
-with an `error` message when the check could not run) and `application` (`name`, `url` and `environment` of your app).
+The body is the same document as the [JSON output](#json-output), with three extra keys: `event` (`report`, or `check_failed`
+with an `error` message when the check could not run), `application` (`name`, `url` and `environment` of your app) and
+`only_new_findings` (whether [only new findings](#only-new-findings) are reported).
 
 With `LCS_WEBHOOK_SECRET` set (optional), every request carries an `X-Signature-256` header: `sha256=` followed by the
 HMAC-SHA256 of the body. Verify it on the receiving side before trusting the request:

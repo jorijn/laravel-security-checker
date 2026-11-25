@@ -66,6 +66,25 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Laravel Security Checker — Only new findings
+     |--------------------------------------------------------------------------
+     |
+     | Email, Slack, Teams and the webhook only report the vulnerabilities that
+     | the previous run of that same command did not report yet, and send
+     | nothing when there is nothing new. security-check:now always shows all.
+     |
+     | Which findings were reported is kept in Laravel's cache, in the store
+     | named below (empty = your default cache store). When that state is gone
+     | (first run, cleared cache), everything is reported once more.
+     |
+     */
+
+    'notify_only_new' => env('LCS_NOTIFY_ONLY_NEW', false),
+
+    'state_cache_store' => env('LCS_STATE_CACHE_STORE'),
+
+    /*
+     |--------------------------------------------------------------------------
      | Laravel Security Checker — Alert when the check could not run
      |--------------------------------------------------------------------------
      |
