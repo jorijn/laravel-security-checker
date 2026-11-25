@@ -30,7 +30,50 @@ class ConsoleCommandTest extends E2ETestCase
         // Version constraints are honoured: this advisory only affects laravel/framework 4.0.0.
         $this->assertStringNotContainsString('CVE-2099-0009', $output);
 
-        // And the advisories really came from the (fake) GitHub archive, not from a cache.
+        // The advisories really came from the (fake) Packagist feed, in a single request that
+        // carries no package names: the privacy promise of the default driver.
+        $this->assertSame(
+            [['type' => 'request', 'host' => 'packagist.org', 'request' => 'GET /api/security-advisories/?updatedSince=0 HTTP/1.1']],
+            $this->advisoryRequests()
+        );
+    }
+
+    public function testPerPackageDriverSendsTheInstalledPackageNamesAndReportsTheSame(): void
+    {
+        $default = $this->artisan(['security-check:now'])->getOutput();
+        @unlink(static::$stateDir.'/requests.jsonl');
+
+        $process = $this->artisan(['security-check:now'], ['LCS_DRIVER' => 'packagist-per-package']);
+
+        $this->assertSame(1, $process->getExitCode(), $process->getErrorOutput());
+        $this->assertSame($default, $process->getOutput());
+
+        $requests = $this->advisoryRequests();
+        $this->assertNotEmpty($requests);
+
+        foreach ($requests as $request) {
+            $this->assertSame('POST /api/security-advisories/ HTTP/1.1', $request['request']);
+        }
+
+        $packages = array_merge(...array_column($requests, 'packages'));
+        $this->assertContains('laravel/framework', $packages);
+        $this->assertContains('phpunit/phpunit', $packages);
+    }
+
+    /**
+     * The 3.x data source stays available, deprecated, until 5.0.
+     */
+    public function testDeprecatedEnlightnDriverStillWorks(): void
+    {
+        $process = $this->artisan(['security-check:now'], ['LCS_DRIVER' => 'enlightn']);
+        $output = $process->getOutput();
+
+        $this->assertSame(1, $process->getExitCode(), $process->getErrorOutput());
+        $this->assertStringContainsString('"enlightn" driver of laravel-security-checker is deprecated', $output);
+        $this->assertStringContainsString('[CRITICAL] 2 packages have known vulnerabilities', $output);
+        $this->assertStringContainsString(' * CVE-2099-0001: E2E fixture: framework advisory with a CVE', $output);
+        $this->assertStringNotContainsString('CVE-2099-0009', $output);
+
         $this->assertSame(
             [['type' => 'request', 'host' => 'codeload.github.com', 'request' => 'GET /FriendsOfPHP/security-advisories/zip/master HTTP/1.1']],
             $this->advisoryRequests()
@@ -93,28 +136,44 @@ class ConsoleCommandTest extends E2ETestCase
     }
 
     /**
-     * Characterises today's behaviour when the advisory source is down: the exception bubbles
-     * up and the command exits non-zero. Not pretty, but at least not silent; 4.0 will give
-     * this its own exit code.
+     * Exit code 2 means "the check could not run", so cron wrappers and CI steps can tell it
+     * apart from "vulnerabilities found" (1). In 3.x both were 1.
      */
-    public function testUnreachableAdvisorySourceFailsLoudly(): void
+    public function testUnreachableAdvisorySourceExitsWithTwo(): void
     {
         $this->breakAdvisorySource('refuse');
 
         $process = $this->artisan(['security-check:now']);
+        $output = $process->getOutput().$process->getErrorOutput();
 
-        $this->assertNotSame(0, $process->getExitCode());
-        $this->assertStringNotContainsString('[OK]', $process->getOutput());
+        $this->assertSame(2, $process->getExitCode(), $output);
+        $this->assertStringContainsString('The security check could not run: Could not reach Packagist', $output);
+        $this->assertStringNotContainsString('[OK]', $output);
+        $this->assertStringContainsString('the security check could not run', $this->appLog());
     }
 
-    public function testAdvisorySourceHttpErrorFailsLoudly(): void
+    public function testAdvisorySourceHttpErrorExitsWithTwo(): void
     {
         $this->breakAdvisorySource('http-error:503');
 
         $process = $this->artisan(['security-check:now']);
+        $output = $process->getOutput().$process->getErrorOutput();
 
-        $this->assertNotSame(0, $process->getExitCode());
-        $this->assertStringNotContainsString('[OK]', $process->getOutput());
-        $this->assertStringContainsString('503', $process->getOutput().$process->getErrorOutput());
+        $this->assertSame(2, $process->getExitCode(), $output);
+        $this->assertStringContainsString('Packagist answered HTTP 503', $output);
+        $this->assertStringNotContainsString('[OK]', $output);
+
+        // Server errors are retried before giving up, so one hiccup does not raise an alarm.
+        $this->assertCount(3, $this->advisoryRequests());
+    }
+
+    public function testDeprecatedEnlightnDriverFailureAlsoExitsWithTwo(): void
+    {
+        $this->breakAdvisorySource('http-error:503');
+
+        $process = $this->artisan(['security-check:now'], ['LCS_DRIVER' => 'enlightn']);
+
+        $this->assertSame(2, $process->getExitCode(), $process->getOutput().$process->getErrorOutput());
+        $this->assertStringContainsString('The Enlightn security checker failed', $process->getOutput());
     }
 }

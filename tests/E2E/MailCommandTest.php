@@ -143,15 +143,36 @@ class MailCommandTest extends E2ETestCase
         $this->assertSame('security@example.com, ops@example.com', $this->mailHeader($mails[0], 'To'));
     }
 
-    public function testUnreachableAdvisorySourceFailsLoudlyAndSendsNoMail(): void
+    public function testUnreachableAdvisorySourceMailsACheckCouldNotRunAlert(): void
     {
         $this->breakAdvisorySource('refuse');
 
         $process = $this->artisan(['security-check:email'], ['LCS_MAIL_TO' => 'security@example.com']);
 
-        // Characterisation of 3.x: the exception reaches the scheduler/cron output, no mail is
-        // sent. 4.0 will add a dedicated exit code and an alert for this case.
-        $this->assertNotSame(0, $process->getExitCode());
+        // 3.x crashed here and sent nothing, so a broken check looked like a quiet week.
+        $this->assertSame(2, $process->getExitCode(), $process->getOutput().$process->getErrorOutput());
+
+        $mails = $this->sentMails();
+        $this->assertCount(1, $mails);
+        $this->assertSame('security@example.com', $this->mailHeader($mails[0], 'To'));
+        $this->assertSame('[E2E App] The security check could not run', $this->mailHeader($mails[0], 'Subject'));
+
+        $html = $this->mailHtml($mails[0]);
+        $this->assertStringContainsString(static::$appPath.'/composer.lock', $html);
+        $this->assertStringContainsString('Could not reach Packagist', $html);
+        $this->assertStringContainsString('the security check could not run, alert emailed to configured recipients', $this->appLog());
+    }
+
+    public function testTheCheckCouldNotRunAlertCanBeTurnedOff(): void
+    {
+        $this->breakAdvisorySource('refuse');
+
+        $process = $this->artisan(['security-check:email'], [
+            'LCS_MAIL_TO' => 'security@example.com',
+            'LCS_NOTIFY_ON_FAILURE' => 'false',
+        ]);
+
+        $this->assertSame(2, $process->getExitCode());
         $this->assertSame([], $this->sentMails());
     }
 }

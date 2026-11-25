@@ -84,13 +84,21 @@ class SlackCommandTest extends E2ETestCase
         $this->assertSame([], $this->advisoryRequests(), 'the check should not even start without a webhook');
     }
 
-    public function testUnreachableAdvisorySourceFailsLoudlyAndPostsNothing(): void
+    public function testUnreachableAdvisorySourcePostsACheckCouldNotRunAlert(): void
     {
         $this->breakAdvisorySource('refuse');
 
         $process = $this->artisan(['security-check:slack'], ['LCS_SLACK_WEBHOOK' => $this->slackWebhookUrl()]);
 
-        $this->assertNotSame(0, $process->getExitCode());
-        $this->assertSame([], $this->slackRequests());
+        $this->assertSame(2, $process->getExitCode(), $process->getOutput().$process->getErrorOutput());
+
+        $requests = $this->slackRequests();
+        $this->assertCount(1, $requests);
+
+        $payload = json_decode($requests[0]['body'], true);
+        $this->assertSame('*The security check could not run*', $payload['text']);
+        $this->assertSame('danger', $payload['attachments'][0]['color'] ?? null, 'posted as an error');
+        $this->assertStringContainsString('`'.static::$appPath.'/composer.lock`', $payload['attachments'][0]['text']);
+        $this->assertStringContainsString('Could not reach Packagist', $payload['attachments'][0]['text']);
     }
 }

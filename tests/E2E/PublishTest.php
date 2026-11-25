@@ -51,6 +51,21 @@ class PublishTest extends E2ETestCase
         $this->assertStringContainsString('E2E fixture: framework advisory without a CVE', $output);
     }
 
+    /**
+     * Upgrading from 3.x must not require touching a config file that was published back then:
+     * the new keys (driver, packagist, notify_on_failure) fall back to the package defaults.
+     */
+    public function testConfigPublishedWith3xStillWorks(): void
+    {
+        copy(__DIR__.'/fixtures/published-config-3.x.php', static::$appPath.'/config/laravel-security-checker.php');
+
+        $process = $this->artisan(['security-check:now'], ['LCS_EXCLUDE_DEV' => 'true']);
+
+        $this->assertSame(1, $process->getExitCode(), $process->getOutput().$process->getErrorOutput());
+        $this->assertStringContainsString('[CRITICAL] 1 package has known vulnerabilities', $process->getOutput());
+        $this->assertSame('packagist.org', $this->advisoryRequests()[0]['host'] ?? null);
+    }
+
     public function testPublishedViewIsUsedForTheMail(): void
     {
         $this->publish('views');
@@ -81,6 +96,24 @@ class PublishTest extends E2ETestCase
         $this->artisan(['security-check:email'], ['LCS_MAIL_TO' => 'security@example.com']);
 
         $this->assertSame('[E2E App] 2 packages need attention', $this->mailHeader($this->sentMails()[0] ?? '', 'Subject'));
+    }
+
+    /**
+     * Translations published with 3.x lack the 4.0 keys; those must fall back to the package's
+     * own lines instead of showing raw translation keys in the alert.
+     */
+    public function testTranslationsPublishedWith3xFallBackForNewMessages(): void
+    {
+        $this->publish('translations');
+
+        $published = $this->publishedTranslationsDirectory().'/en/messages.php';
+        file_put_contents($published, preg_replace("/\\s*'(subject|body)_check_failed(_hint)?' => '[^']*',/", '', (string) file_get_contents($published)));
+        $this->assertStringNotContainsString('check_failed', (string) file_get_contents($published), 'precondition: 3.x-like file');
+
+        $this->breakAdvisorySource('refuse');
+        $this->artisan(['security-check:email'], ['LCS_MAIL_TO' => 'security@example.com']);
+
+        $this->assertSame('[E2E App] The security check could not run', $this->mailHeader($this->sentMails()[0] ?? '', 'Subject'));
     }
 
     /**
