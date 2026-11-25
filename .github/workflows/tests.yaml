@@ -28,7 +28,7 @@ jobs:
             variant: 'symfony-8'
           # Laravel 14 is not released yet; this job shows early whether 4.x will work with it.
           - php: '8.5'
-            laravel: '^14.0'
+            laravel: '14 (dev-master)'
             variant: 'laravel-14-dev'
 
     # A failing Laravel 14 development build is a heads-up, not a reason to block a merge.
@@ -59,7 +59,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "illuminate/contracts=${{ matrix.laravel }}" --prefer-stable --no-update
+          if [ "${{ matrix.variant }}" = "laravel-14-dev" ]; then
+            # laravel/framework's dev-master has no 14.x branch alias yet, so name it directly,
+            # together with the Testbench branch that targets it.
+            composer require --dev "laravel/framework:dev-master" "orchestra/testbench:12.x-dev" --no-update
+          else
+            composer require "illuminate/contracts=${{ matrix.laravel }}" --prefer-stable --no-update
+          fi
           composer update --prefer-dist --no-interaction --no-progress
 
       - name: Show the resolved Laravel and Symfony versions

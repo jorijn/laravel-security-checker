@@ -127,7 +127,7 @@ class DriverTest extends TestCase
 
     private function withLockFileInTheApplication(): void
     {
-        copy(__DIR__.'/fixtures/composer.lock', base_path('composer.lock'));
+        copy(__DIR__.'/fixtures/installed.lock', base_path('composer.lock'));
         $this->beforeApplicationDestroyed(fn () => @unlink(base_path('composer.lock')));
     }
 }

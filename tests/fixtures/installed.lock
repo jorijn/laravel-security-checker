@@ -1,0 +1,14 @@
+{
+    "_readme": ["Fixture for the unit tests: only the fields the checker reads."],
+    "content-hash": "00000000000000000000000000000000",
+    "packages": [
+        {"name": "acme/private-package", "version": "1.0.0"},
+        {"name": "Laravel/Framework", "version": "v10.0.0", "time": "2023-02-14T14:38:27+00:00"},
+        {"name": "league/commonmark", "version": "dev-main"},
+        {"name": "symfony/http-kernel", "version": "v6.4.20"},
+        {"name": "broken/entry"}
+    ],
+    "packages-dev": [
+        {"name": "phpunit/phpunit", "version": "9.5.0"}
+    ]
+}

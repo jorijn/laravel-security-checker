@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
  */
 class PackagistCheckerTest extends TestCase
 {
-    private const LOCK = __DIR__.'/fixtures/composer.lock';
+    private const LOCK = __DIR__.'/fixtures/installed.lock';
 
     protected function setUp(): void
     {
