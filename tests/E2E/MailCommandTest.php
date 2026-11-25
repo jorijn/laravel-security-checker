@@ -51,6 +51,20 @@ class MailCommandTest extends E2ETestCase
         $this->assertNotContains('1', $cells);
     }
 
+    public function testEveryPackageGetsItsOwnHeading(): void
+    {
+        $this->artisan(['security-check:email'], ['LCS_MAIL_TO' => 'security@example.com']);
+
+        $html = $this->mailHtml($this->sentMails()[0] ?? '');
+
+        // Both fixture packages must be rendered as a heading. Without a blank line after each
+        // table, Markdown treats the next "## package" line as part of the table's HTML block,
+        // so every package but the first showed up as literal "## vendor/package" text.
+        $this->assertMatchesRegularExpression('/<h2[^>]*>laravel\/framework — /', $html);
+        $this->assertMatchesRegularExpression('/<h2[^>]*>phpunit\/phpunit — /', $html);
+        $this->assertStringNotContainsString('## ', $html);
+    }
+
     public function testSendsNothingWithoutVulnerabilitiesByDefault(): void
     {
         $this->useAdvisories('clean');

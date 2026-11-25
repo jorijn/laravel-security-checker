@@ -15,7 +15,7 @@ It can display the results in your console, or email them or post them to Slack 
 > See [UPGRADING.md](UPGRADING.md) for everything that changed; for most applications it is just `composer require jorijn/laravel-security-checker:^4.0`.
 
 #### Screenshot
-<img width="647" alt="screenshot-email" src="https://user-images.githubusercontent.com/85466/28497517-9e41580e-6f89-11e7-9c4e-0ebf713add6a.png">
+<img width="600" alt="The security report mail, listing three vulnerable packages with their advisories and CVE identifiers" src="https://raw.githubusercontent.com/jorijn/laravel-security-checker/master/.github/images/screenshot-mail.png">
 
 ## Installation
 Require this package with composer using the following command:
@@ -57,6 +57,9 @@ php artisan vendor:publish --provider="Jorijn\LaravelSecurityChecker\ServiceProv
 
 If you published the views with an earlier version of this package, the CVE column of your copy of `security-mail.blade.php` shows `1` instead of the CVE identifier.
 To fix it, replace `{{ $information['cve'] or '' }}` with `{{ $information['cve'] ?? '' }}` in that file.
+
+In copies published with 4.0.0 or earlier, every package after the first shows up as a literal `## vendor/package` line instead of a heading.
+To fix it, add an empty line between `@endcomponent` and `@endforeach` near the end of the package loop.
 
 By default, the package won't email you when there are no vulnerabilities found. You can change this setting by adding the following entry to your `.env` file.
 
@@ -171,7 +174,7 @@ Use `security-check:slack` instead to send the report to Slack.
 ## Running as a command
 You can run the check yourself with `php artisan security-check:now`, for example in a CI pipeline or a deploy script.
 
-![screenshot-console](https://user-images.githubusercontent.com/85466/28452254-17f3476e-6df2-11e7-9e5e-1c3d52b57722.png)
+<img width="784" alt="Output of php artisan security-check:now, listing three vulnerable packages with their advisories and CVE identifiers" src="https://raw.githubusercontent.com/jorijn/laravel-security-checker/master/.github/images/screenshot-console.png">
 
 ### Exit codes
 | Exit code | Meaning |

@@ -11,6 +11,8 @@
 | {{ $information['title'] }} | {{ $information['cve'] ?? '' }} | [@lang('laravel-security-checker::messages.view')]({{ $information['link'] }})
 @endforeach
 @endcomponent
+{{-- Keep the blank line below: it ends the table's HTML block, so the next package's "##" line is rendered as a heading. --}}
+
 @endforeach
 
 @if (count($packages) === 0)
