@@ -3,6 +3,7 @@
 namespace Jorijn\LaravelSecurityChecker\Tests;
 
 use Illuminate\Support\Facades\Config;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Support\Facades\Mail;
 use Jorijn\LaravelSecurityChecker\Mailables\SecurityMail;
 
@@ -98,5 +99,99 @@ class SecurityMailCommandTest extends TestCase
             return $mail->hasTo('recipient@example.net')
                 && [ ] === $mail->getCheckResult();
         });
+    }
+
+    /**
+     * Config values reach us as strings when they come from .env (or a published config), so the
+     * common spellings of "yes" must be honoured, not only a real boolean `true`.
+     */
+    #[DataProvider('truthyValues')]
+    public function testNotifyWithoutVulnerabilitiesAcceptsTruthyValues(mixed $value): void
+    {
+        Mail::fake();
+
+        $this->bindPassingSecurityChecker();
+
+        Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
+        Config::set('laravel-security-checker.notify_even_without_vulnerabilities', $value);
+
+        $this->artisan('security-check:email')->assertExitCode(0);
+
+        Mail::assertSent(SecurityMail::class);
+    }
+
+    #[DataProvider('falsyValues')]
+    public function testNotifyWithoutVulnerabilitiesIgnoresFalsyValues(mixed $value): void
+    {
+        Mail::fake();
+
+        $this->bindPassingSecurityChecker();
+
+        Config::set('laravel-security-checker.recipients', [ 'recipient@example.net' ]);
+        Config::set('laravel-security-checker.notify_even_without_vulnerabilities', $value);
+
+        $this->artisan('security-check:email')->assertExitCode(0);
+
+        Mail::assertNotSent(SecurityMail::class);
+    }
+
+    public static function truthyValues(): array
+    {
+        return [[true], ['true'], ['1'], [1], ['yes'], ['on'], ['TRUE']];
+    }
+
+    public static function falsyValues(): array
+    {
+        // 'nonsense' guards the safe default: an unrecognised value must not start sending mail
+        return [[false], [null], [''], ['false'], ['0'], [0], ['no'], ['off'], ['nonsense']];
+    }
+
+    /**
+     * LCS_MAIL_TO can only hold a single string, so several recipients end up comma-separated.
+     */
+    #[DataProvider('recipientConfigurations')]
+    public function testRecipientsAreNormalized(mixed $configured, array $expected): void
+    {
+        Mail::fake();
+
+        $this->bindFailingSecurityChecker();
+
+        Config::set('laravel-security-checker.recipients', $configured);
+
+        $this->artisan('security-check:email')->assertExitCode(0);
+
+        Mail::assertSent(SecurityMail::class, function (SecurityMail $mail) use ($expected) {
+            return array_column($mail->to, 'address') === $expected;
+        });
+    }
+
+    public static function recipientConfigurations(): array
+    {
+        return [
+            'single address' => [['a@example.net'], ['a@example.net']],
+            'comma separated' => [['a@example.net,b@example.net'], ['a@example.net', 'b@example.net']],
+            'comma and spaces' => [[' a@example.net , b@example.net '], ['a@example.net', 'b@example.net']],
+            'semicolon separated' => [['a@example.net;b@example.net'], ['a@example.net', 'b@example.net']],
+            'trailing comma' => [['a@example.net,'], ['a@example.net']],
+            'duplicates' => [['a@example.net', 'a@example.net,b@example.net'], ['a@example.net', 'b@example.net']],
+            'published config as plain string' => ['a@example.net,b@example.net', ['a@example.net', 'b@example.net']],
+            'mixed with empty entries' => [[null, '', 'a@example.net'], ['a@example.net']],
+        ];
+    }
+
+    /**
+     * Only separators and blanks must count as "no recipients", so this still fails loudly.
+     */
+    public function testOnlySeparatorsMeansNoRecipients(): void
+    {
+        Mail::fake();
+
+        $this->bindFailingSecurityChecker();
+
+        Config::set('laravel-security-checker.recipients', [ ' , ; ' ]);
+
+        $this->artisan('security-check:email')->assertExitCode(1);
+
+        Mail::assertNotSent(SecurityMail::class);
     }
 }
